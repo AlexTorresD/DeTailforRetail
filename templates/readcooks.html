@@ -1,0 +1,21 @@
+{% extends "layouts/tablelayout.html" %}
+
+{% block title_table %}
+<h2>Read Cooks</h2> 
+{% endblock %}
+
+{% block body_table %}
+<table>
+  <tr>
+      <th>Chef</th>
+      <th>Dish</th>
+  </tr>
+  {% for chef, dish in cookslist %}
+  <tr>
+      <td>{{ chef }}</td>
+      <td>{{ dish }}</td>
+  </tr>
+  {% endfor %}    
+</table>
+
+{% endblock %}
