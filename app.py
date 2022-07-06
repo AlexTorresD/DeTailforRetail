@@ -430,9 +430,14 @@ def cooksdelete():
     dish_name = request.form.get('dishnames')
 
     try:
+        chef = db.session.query(ChefInfo).filter(
+            ChefInfo.cname==chef_name).first()
+        dish = db.session.query(Dish).filter(
+            Dish.dname==dish_name).first()
+
         obj = db.session.query(Cooks).filter(
-            Cooks.chefname==chef_name, 
-            Cooks.dishname==dish_name).first()
+            Cooks.chef==chef, 
+            Cooks.dish==dish).first()
         
         if obj == None:
             msg = 'Cooks relationship between {} and {} not found.'.format(chef_name, dish_name)
