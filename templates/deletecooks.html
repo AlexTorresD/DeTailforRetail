@@ -1,0 +1,26 @@
+{% extends "layouts/formlayout.html" %}
+
+{% block title_form %}
+<h2>Delete Cooks</h2>
+{% endblock %}
+
+{% block body_form %}
+<form action="{{ url_for('cooksdelete')}}" method="post">
+  <label for="chefnames">Select a chef</label>
+  <select name="chefnames">
+    {% for name in chefnames %}
+      <option value="{{ name }}">{{ name }}</option>
+    {% endfor %} 
+  </select>
+  <label for="dishnames">Select a dish</label>
+  <select name="dishnames">
+    {% for name in dishnames %}
+      <option value="{{ name }}">{{ name }}</option>
+    {% endfor %} 
+  </select>
+  <div>
+      <button >Delete</button>
+  </div>
+</form>
+
+{% endblock %}
