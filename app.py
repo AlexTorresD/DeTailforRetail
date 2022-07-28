@@ -17,7 +17,7 @@ db = SQLAlchemy(app)
 
 
 
-
+'''
 class Dish(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     dname = db.Column(db.String(64), unique=True)
@@ -41,14 +41,21 @@ class ChefInfo(db.Model):
     addr = db.Column(db.String(128))
     phone = db.Column(db.String(64))
     
+
+'''
+class Store(db.Model):  
+    Store_ID = db.Column(db.Integer, primary_key=True)
+    Store_Name = db.Column(db.String(128))
+    Location = db.Column(db.String(128))
+    
 class Employee(db.Model):
-    Employee_id = db.Column(db.Integer, primary_key=True)
-    Store_ID = db.Column(db.Integer, db.ForeignKey('Store.Store_ID')) #add foreign key
+    Employee_ID = db.Column(db.Integer, primary_key=True)
+    Store_ID = db.Column(db.Integer, db.ForeignKey('store.Store_ID')) #add foreign key
     Employee_Fname = db.Column(db.String(64))
     Employee_Lname = db.Column(db.String(64))
     Employee_Email = db.Column(db.String(128))
     Employee_Phone = db.Column(db.String(128))
-    position = db.Column(db.String(128))
+    Position = db.Column(db.String(128))
     Hours_Worked = db.Column(db.Integer)
     Salary = db.Column(db.Float)
 
@@ -62,7 +69,7 @@ class Manufacturer(db.Model):
     
 class Product(db.Model):
     Product_ID = db.Column(db.Integer, primary_key=True)
-    Manufacturer_ID = db.Column(db.Integer) #foreign ref
+    Manufacturer_ID = db.Column(db.Integer, db.ForeignKey('manufacturer.Manufacturer_ID')) #foreign ref
     Product_Price = db.Column(db.Float)
     Product_Quantity = db.Column(db.Integer)
     Product_Size = db.Column(db.Integer)
@@ -71,27 +78,25 @@ class Product(db.Model):
     
 class Orders(db.Model):
     Order_ID = db.Column(db.Integer, primary_key=True)
-    Store_ID = db.Column(db.Integer,) #foreign ref
-    Product_ID = db.Column(db.Integer) #foreign ref
+    Store_ID = db.Column(db.Integer, db.ForeignKey('store.Store_ID')) #foreign ref
+    Product_ID = db.Column(db.Integer, db.ForeignKey('product.Product_ID')) #foreign ref
     Order_Quantity = db.Column(db.Integer)
     Order_Price = db.Column(db.Float)
     Order_Date = db.Column(db.DateTime)
     Received = db.Column(db.Boolean)
 
-class Store(db.Model):  
-    Store_ID = db.Column(db.Integer, primary_key=True)
-    Store_Name = db.Column(db.String(128))
-    Location = db.Column(db.String(128))
 
 class Staff(db.Model):
     Staff_ID = db.Column(db.Integer, primary_key=True)
-    Store_ID = db.Column(db.Integer, )
-    Employee_ID = db.Column(db.Integer, )
+    Store_ID = db.Column(db.Integer, db.ForeignKey('store.Store_ID'))
+    Employee_ID = db.Column(db.Integer, db.ForeignKey('employee.Employee_ID'))
     
 
 if __name__ == '__main__':
     app.run()
 
+
+'''
 def getchefs():
     query = select(ChefInfo)
     result = db.session.execute(query)
@@ -502,3 +507,4 @@ def cooksdelete():
 
     return deletecooks(feedback_message='Successfully deleted cooks relationship between {} and {}'.format(chef_name, dish_name),
                        feedback_type=True)
+'''
