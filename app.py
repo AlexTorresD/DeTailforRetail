@@ -47,6 +47,7 @@ class Store(db.Model):
     Store_ID = db.Column(db.Integer, primary_key=True)
     Store_Name = db.Column(db.String(128))
     Location = db.Column(db.String(128))
+    product_Relation = db.relationship('product', backref='store', lazy=True)
     
 class Employee(db.Model):
     Employee_ID = db.Column(db.Integer, primary_key=True)
@@ -66,7 +67,8 @@ class Manufacturer(db.Model):
     Customer_Phone = db.Column(db.String(128))
     Manufacturer_Headquarters = db.Column(db.String(128))
     Manufacturer_Description = db.Column(db.String(128))
-    
+    product_Relation = db.relationship('product', backref='manufacturer', lazy=True)
+
 class Product(db.Model):
     Product_ID = db.Column(db.Integer, primary_key=True)
     Manufacturer_ID = db.Column(db.Integer, db.ForeignKey('manufacturer.Manufacturer_ID')) #foreign ref
@@ -75,7 +77,8 @@ class Product(db.Model):
     Product_Size = db.Column(db.Integer)
     Product_Type = db.Column(db.String(128))
     Product_Description = db.Column(db.String(128))
-    
+    ordes_Relation = db.relationship('orders', backref='product', lazy=True)
+
 class Orders(db.Model):
     Order_ID = db.Column(db.Integer, primary_key=True)
     Store_ID = db.Column(db.Integer, db.ForeignKey('store.Store_ID')) #foreign ref
@@ -90,6 +93,7 @@ class Staff(db.Model):
     Staff_ID = db.Column(db.Integer, primary_key=True)
     Store_ID = db.Column(db.Integer, db.ForeignKey('store.Store_ID'))
     Employee_ID = db.Column(db.Integer, db.ForeignKey('employee.Employee_ID'))
+    employee_Relation = db.relationship('employee', backref='staff', lazy=True)
     
 
 if __name__ == '__main__':
