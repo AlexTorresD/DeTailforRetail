@@ -158,6 +158,7 @@ def createemployee(feedback_message=None, feedback_type=False):
             feedback_type=feedback_type)
 @app.route("/employeecreate", methods=['POST'])
 def employeecreate():
+    Employee_ID = request.form["Employee_ID"]
     Employee_Fname = request.form["Employee_Fname"]
     Employee_Lname = request.form["Employee_Lname"]
     Employee_Email = request.form["Employee_Email"]
@@ -166,7 +167,7 @@ def employeecreate():
     Hours_Worked = request.form["Hours_Worked"]
     Salary = request.form["Salary"]
     try:
-        entry = Employee(Employee_Fname=Employee_Fname, Employee_Lname=Employee_Lname, 
+        entry = Employee(Employee_ID=Employee_ID, Employee_Fname=Employee_Fname, Employee_Lname=Employee_Lname, 
             Employee_Email=Employee_Email, Employee_Phone=Employee_Phone, Position=Position, 
             Hours_Worked=Hours_Worked, Salary=Salary)
         db.session.add(entry)
@@ -218,8 +219,10 @@ def employeeupdate():
         if obj == None:
             msg = 'Employee {} not found.'.format(e_ID)
             return updateemployee(feedback_message=msg, feedback_type=False)
-        if Employee_ID != ' ':
+        if Employee_ID != '':
             obj.Employee_ID = Employee_ID
+        else:
+            obj.Employee_ID = e_ID
         if Employee_Fname != '':
             obj.Employee_Fname = Employee_Fname
         if Employee_Lname != '':
@@ -240,7 +243,7 @@ def employeeupdate():
         db.session.rollback()
         return updateemployee(feedback_message=err, feedback_type=False)
 
-    return updateemployee(feedback_message='Successfully updated employee {}'.format(e_ID),
+    return updateemployee(feedback_message='Successfully updated employee with ID {}'.format(e_ID),
                        feedback_type=True)
 
 @app.route("/deleteemployee")
@@ -272,7 +275,7 @@ def employeedelete():
         db.session.rollback()
         return deleteemployee(feedback_message=err, feedback_type=False)
 
-    return deleteemployee(feedback_message='Successfully deleted employee {}'.format(employee_ID),
+    return deleteemployee(feedback_message='Successfully deleted employee with {}'.format(employee_ID),
                        feedback_type=True)
 def getchefs():
     query = select(ChefInfo)
