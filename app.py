@@ -13,6 +13,56 @@ app.secret_key = 'secret string'
 
 db = SQLAlchemy(app)
 
+class Store(db.Model): 
+ Store_ID = db.Column(db.Integer, primary_key=True)
+ Store_Name = db.Column(db.String(128))
+ Location = db.Column(db.String(128))
+ Order_Relation = db.relationship('Orders', backref='store', lazy=True)
+ 
+class Employee(db.Model):
+ Employee_ID = db.Column(db.Integer, primary_key=True)
+ Employee_Fname = db.Column(db.String(64))
+ Employee_Lname = db.Column(db.String(64))
+ Employee_Email = db.Column(db.String(128))
+ Employee_Phone = db.Column(db.String(128))
+ Position = db.Column(db.String(128))
+ Hours_Worked = db.Column(db.Integer)
+ Salary = db.Column(db.Float)
+ 
+class Manufacturer(db.Model):
+ Manufacturer_ID = db.Column(db.Integer, primary_key=True)
+ Manufacturer_Name = db.Column(db.String(128))
+ Customer_Email = db.Column(db.String(128))
+ Customer_Phone = db.Column(db.String(128))
+ Manufacturer_Headquarters = db.Column(db.String(128))
+ Manufacturer_Description = db.Column(db.String(128))
+ Product_Relation = db.relationship('Product', backref='manufacturer', lazy=True)
+ 
+class Product(db.Model):
+ Product_ID = db.Column(db.Integer, primary_key=True)
+ Manufacturer_ID = db.Column(db.Integer, db.ForeignKey('manufacturer.Manufacturer_ID')) #foreign ref
+ Product_Price = db.Column(db.Float)
+ Product_Quantity = db.Column(db.Integer)
+ Product_Size = db.Column(db.Integer)
+ Product_Type = db.Column(db.String(128))
+ Product_Description = db.Column(db.String(128))
+ Orders_Relation = db.relationship('Orders', backref='product', lazy=True)
+ 
+class Orders(db.Model):
+ Order_ID = db.Column(db.Integer, primary_key=True)
+ Store_ID = db.Column(db.Integer, db.ForeignKey('store.Store_ID')) #foreign ref
+ Product_ID = db.Column(db.Integer, db.ForeignKey('product.Product_ID')) #foreign ref
+ Order_Quantity = db.Column(db.Integer)
+ Order_Price = db.Column(db.Float)
+ Order_Date = db.Column(db.DateTime)
+ Received = db.Column(db.Boolean, default=False, nullable=False)
+ 
+class Staff(db.Model):
+ Staff_ID = db.Column(db.Integer, primary_key=True)
+ Store_ID = db.Column(db.Integer, db.ForeignKey('store.Store_ID'))
+ Employee_ID = db.Column(db.Integer, db.ForeignKey('employee.Employee_ID'))
+ Employee_Relation = db.relationship('Employee', backref='staff', lazy=True)
+
 class ChefInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cname = db.Column(db.String(64), unique=True)
@@ -41,6 +91,137 @@ class Cooks(db.Model):
 if __name__ == '__main__':
     app.run()
 
+def getemployees():
+    query = select(Employee)
+    result = db.session.execute(query)
+    emp_list = []
+    for e in result.scalars():
+        emp_list.append((e.Employee_ID, e.Employee_Fname, e.Employee_Lname, e.Employee_Email, e.Employee_Phone, e.Position, e.Hours_Worked, e.Salary))
+    return emp_list
+
+@app.route("/createemployee")
+def createemployee(feedback_message=None, feedback_type=False):
+    return render_template("createemployee.html",
+            feedback_message=feedback_message, 
+            feedback_type=feedback_type)
+@app.route("/employeecreate", methods=['POST'])
+def employeecreate():
+    Employee_Fname = request.form["Employee_Fname"]
+    Employee_Lname = request.form["Employee_Lname"]
+    Employee_Email = request.form["Employee_Email"]
+    Employee_Phone = request.form["Employee_Phone"]
+    Position = request.form["Position"]
+    Hours_Worked = request.form["Hours_Worked"]
+    Salary = request.form["Salary"]
+    try:
+        entry = Employee(Employee_Fname=Employee_Fname, Employee_Lname=Employee_Lname, 
+            Employee_Email=Employee_Email, Employee_Phone=Employee_Phone, Position=Position, 
+            Hours_Worked=Hours_Worked, Salary=Salary)
+        db.session.add(entry)
+        db.session.commit()
+    except exc.IntegrityError as err:
+        db.session.rollback()
+        return createemployee(feedback_message='An employee with name {} {} already exists. Create an employee with a different name.'.format(Employee_Fname, Employee_Lname), feedback_type=False)
+    except Exception as err:
+        db.session.rollback()
+        return createemployee(feedback_message='Database error: {} '.format(err), feedback_type=False)
+    return createemployee(feedback_message='Successfully added employee {} {} '.format(Employee_Fname, Employee_Lname),
+                       feedback_type=True)
+
+@app.route("/reademployee")
+def reademployee():
+    query = select(Employee)
+    result = db.session.execute(query)
+
+    emp_list = []
+    for e in result.scalars():
+        emp_list.append((e.Employee_ID, e.Employee_Fname, e.Employee_Lname, e.Employee_Email, e.Employee_Phone, e.Position, e.Hours_Worked, e.Salary))
+    
+    return render_template("reademployee.html", empList=emp_list)
+
+@app.route("/updateemployee")
+def updateemployee(feedback_message=None, feedback_type=False):
+    employee_IDs = [name for name, _, _, _, _, _, _, _ in getemployees()]
+    return render_template("updateemployee.html", 
+                           employeeIDs = employee_IDs, 
+                           feedback_message=feedback_message, 
+                           feedback_type=feedback_type)
+
+@app.route("/employeeupdate", methods=['POST'])
+def employeeupdate():
+    e_ID = request.form.get('employeeIDs')
+    Employee_ID = request.form["Employee_ID"]
+    Employee_Fname = request.form["Employee_Fname"]
+    Employee_Lname = request.form["Employee_Lname"]
+    Employee_Email = request.form["Employee_Email"]
+    Employee_Phone = request.form["Employee_Phone"]
+    Position = request.form["Position"]
+    Hours_Worked = request.form["Hours_Worked"]
+    Salary = request.form["Salary"]
+
+    try:
+        obj = db.session.query(Employee).filter(
+            Employee.Employee_ID==e_ID).first()
+        
+        if obj == None:
+            msg = 'Employee {} not found.'.format(e_ID)
+            return updateemployee(feedback_message=msg, feedback_type=False)
+        if Employee_ID != ' ':
+            obj.Employee_ID = Employee_ID
+        if Employee_Fname != '':
+            obj.Employee_Fname = Employee_Fname
+        if Employee_Lname != '':
+            obj.Employee_Lname = Employee_Lname
+        if Employee_Email != '':
+            obj.Employee_Email = Employee_Email
+        if Employee_Phone != '':
+            obj.Employee_Phone = Employee_Phone
+        if Position != '':
+            obj.Position = Position
+        if Hours_Worked != '':
+            obj.Hours_Worked = Hours_Worked
+        if Salary != '':
+            obj.Salary = Salary
+        
+        db.session.commit()
+    except Exception as err:
+        db.session.rollback()
+        return updateemployee(feedback_message=err, feedback_type=False)
+
+    return updateemployee(feedback_message='Successfully updated employee {}'.format(e_ID),
+                       feedback_type=True)
+
+@app.route("/deleteemployee")
+def deleteemployee(feedback_message=None, feedback_type=False):
+    employee_IDs = [name for name, _, _, _, _, _, _, _ in getemployees()]
+    return render_template("deleteemployee.html", 
+                           employeeIDs=employee_IDs, 
+                           feedback_message=feedback_message, 
+                           feedback_type=feedback_type)
+
+@app.route("/employeedelete", methods=['POST'])
+def employeedelete():
+    if not request.form.get('confirmInput'):
+        return deleteemployee(feedback_message='Operation canceled. Employee not deleted.', feedback_type=False)
+    
+    employee_ID = request.form.get('employeeIDs')
+
+    try:
+        obj = db.session.query(Employee).filter(
+            Employee.Employee_ID==employee_ID).first()
+        
+        if obj == None:
+            msg = 'Employee {} not found.'.format(employee_ID)
+            return deleteemployee(feedback_message=msg, feedback_type=False)
+        
+        db.session.delete(obj)
+        db.session.commit()
+    except Exception as err:
+        db.session.rollback()
+        return deleteemployee(feedback_message=err, feedback_type=False)
+
+    return deleteemployee(feedback_message='Successfully deleted employee {}'.format(employee_ID),
+                       feedback_type=True)
 def getchefs():
     query = select(ChefInfo)
     result = db.session.execute(query)

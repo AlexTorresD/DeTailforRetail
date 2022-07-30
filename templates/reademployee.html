@@ -1,0 +1,33 @@
+{% extends "layouts/tablelayout.html" %}
+
+{% block title_table %}
+<h2>Read Employees</h2> 
+{% endblock %}
+
+{% block body_table %}
+<table style="width:77%">
+    <tr>
+        <th>ID</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Position</th>
+        <th>Hours Worked</th>
+        <th>Salary</th>
+    </tr>
+    {% for id, fname, lname, email, phone, position, hours_worked, salary in empList %}
+    <tr style="height:40px">
+        <td align="center">{{ id }}</td>
+        <td align="center">{{ fname }}</td>
+        <td align="center">{{ lname }}</td>
+        <td align="center">{{ email }}</td>
+        <td align="center">{{ phone }}</td>
+        <td align="center">{{ position }}</td>
+        <td align="center">{{ hours_worked }}</td>
+        <td align="center">{{ salary }}</td>
+    </tr>
+    {% endfor %}    
+</table>
+
+{% endblock %}
