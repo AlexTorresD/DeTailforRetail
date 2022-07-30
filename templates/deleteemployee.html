@@ -6,7 +6,7 @@
 
 {% block body_form %}
 <form action="{{ url_for('employeedelete')}}" method="post">
-  <label for="">Select an employee</label>
+  <label for="">Select an employee based on ID</label>
   <select name="employeeIDs">
     {% for name in employeeIDs %}
       <option value="{{ name }}">{{ name }}</option>
