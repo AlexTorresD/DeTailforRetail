@@ -7,7 +7,7 @@ import psycopg2
 
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://<user>:<password>@localhost/<appname>'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:supersecretpassword@localhost/csce310-app'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Gotright1@localhost/csce310-app'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = 'secret string'
 
