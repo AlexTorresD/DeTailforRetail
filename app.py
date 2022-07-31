@@ -3,13 +3,14 @@ from multiprocessing import synchronize
 from turtle import position
 from flask import Flask, render_template, request, flash
 from flask_sqlalchemy import SQLAlchemy
+from numpy import product
 from sqlalchemy import select
 from sqlalchemy import exc
 import psycopg2
 
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://<user>:<password>@localhost/<appname>'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:123456Yyt@localhost/csce310-app'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:samiamin@localhost/csce310-app'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = 'secret string'
 
@@ -17,7 +18,7 @@ db = SQLAlchemy(app)
 
 
 
-'''
+
 class Dish(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     dname = db.Column(db.String(64), unique=True)
@@ -42,16 +43,15 @@ class ChefInfo(db.Model):
     phone = db.Column(db.String(64))
     
 
-'''
+
 class Store(db.Model):  
     Store_ID = db.Column(db.Integer, primary_key=True)
     Store_Name = db.Column(db.String(128))
     Location = db.Column(db.String(128))
-    product_Relation = db.relationship('product', backref='store', lazy=True)
-    
+    Order_Relation = db.relationship('Orders', backref='store', lazy=True)
+
 class Employee(db.Model):
     Employee_ID = db.Column(db.Integer, primary_key=True)
-    Store_ID = db.Column(db.Integer, db.ForeignKey('store.Store_ID')) #add foreign key
     Employee_Fname = db.Column(db.String(64))
     Employee_Lname = db.Column(db.String(64))
     Employee_Email = db.Column(db.String(128))
@@ -67,7 +67,7 @@ class Manufacturer(db.Model):
     Customer_Phone = db.Column(db.String(128))
     Manufacturer_Headquarters = db.Column(db.String(128))
     Manufacturer_Description = db.Column(db.String(128))
-    product_Relation = db.relationship('product', backref='manufacturer', lazy=True)
+    Product_Relation = db.relationship('Product', backref='manufacturer', lazy=True)
 
 class Product(db.Model):
     Product_ID = db.Column(db.Integer, primary_key=True)
@@ -77,8 +77,8 @@ class Product(db.Model):
     Product_Size = db.Column(db.Integer)
     Product_Type = db.Column(db.String(128))
     Product_Description = db.Column(db.String(128))
-    ordes_Relation = db.relationship('orders', backref='product', lazy=True)
-
+    Orders_Relation = db.relationship('Orders', backref='product', lazy=True)
+    
 class Orders(db.Model):
     Order_ID = db.Column(db.Integer, primary_key=True)
     Store_ID = db.Column(db.Integer, db.ForeignKey('store.Store_ID')) #foreign ref
@@ -86,21 +86,159 @@ class Orders(db.Model):
     Order_Quantity = db.Column(db.Integer)
     Order_Price = db.Column(db.Float)
     Order_Date = db.Column(db.DateTime)
-    Received = db.Column(db.Boolean)
-
+    Received = db.Column(db.Boolean, default=False, nullable=False)
 
 class Staff(db.Model):
     Staff_ID = db.Column(db.Integer, primary_key=True)
     Store_ID = db.Column(db.Integer, db.ForeignKey('store.Store_ID'))
     Employee_ID = db.Column(db.Integer, db.ForeignKey('employee.Employee_ID'))
-    employee_Relation = db.relationship('employee', backref='staff', lazy=True)
+    Employee_Relation = db.relationship('Employee', backref='staff', lazy=True)
+
     
 
 if __name__ == '__main__':
     app.run()
 
+def getproducts():
+    query = select(Product)
+    result = db.session.execute(query)
 
-'''
+    product_list = []
+    for product in result.scalars():
+        product_list.append((product.Product_ID, product.Manufacturer_ID, product.Product_Price, product.Product_Quantity, product.Product_Size, product.Product_Type, product.Product_Description))
+    return product_list
+
+#Create Product
+@app.route("/createproduct")
+def createproduct(feedback_message=None, feedback_type=False):
+    return render_template("createproduct.html",
+            feedback_message=feedback_message, 
+            feedback_type=feedback_type)
+
+@app.route("/productcreate", methods=['POST'])
+def productcreate():
+    Product_ID = request.form["Product_ID"]
+    Manufacturer_ID = request.form["Manufacturer_ID"]
+    Product_Price = request.form["Product_Price"]
+    Product_Quantity = request.form["Product_Quantity"]
+    Product_Size = request.form["Product_Size"]
+    Product_Type = request.form["Product_Type"]
+    Product_Description = request.form["Product_Description"]
+
+    try:
+        entry = Product(Product_ID = Product_ID, Manufacturer_ID = Manufacturer_ID, Product_Price=Product_Price, Product_Quantity=Product_Quantity, Product_Size=Product_Size, Product_Type=Product_Type, Product_Description=Product_Description)
+        db.session.add(entry)
+        db.session.commit()
+    except exc.IntegrityError as err:
+        db.session.rollback()
+        return createproduct(feedback_message='A product with ID {} already exists. Create a product with a different ID.'.format(Product_ID), feedback_type=False)
+    except Exception as err:
+        db.session.rollback()
+        return createproduct(feedback_message='Database error: {}'.format(err), feedback_type=False)
+            
+
+    return createproduct(feedback_message='Successfully added product {}'.format(Product_ID),
+                       feedback_type=True)
+
+#Read product
+@app.route("/readproduct")
+def readproduct():
+    query = select(Product)
+    result = db.session.execute(query)
+
+    product_list = []
+    for product in result.scalars():
+        product_list.append((product.Product_ID, product.Manufacturer_ID, product.Product_Price, product.Product_Quantity, product.Product_Size, product.Product_Type, product.Product_Description))
+    
+    return render_template("readproduct.html", productlist=product_list)
+
+#Update product
+@app.route("/updateproduct")
+def updateproduct(feedback_message=None, feedback_type=False):
+    product_names = [name for name, _, _, _, _, _, _ in getproducts()]
+    return render_template("updateproduct.html", 
+                           productnames=product_names, 
+                           feedback_message=feedback_message, 
+                           feedback_type=feedback_type)
+
+@app.route("/productupdate", methods=['POST'])
+def productupdate():
+    product_name = request.form.get('productnames')
+    Product_ID = request.form["Product_ID"]
+    Manufacturer_ID = request.form["Manufacturer_ID"]
+    Product_Price = request.form["Product_Price"]
+    Product_Quantity = request.form["Product_Quantity"]
+    Product_Size = request.form["Product_Size"]
+    Product_Type = request.form["Product_Type"]
+    Product_Description = request.form["Product_Description"]
+
+    try:
+        obj = db.session.query(Product).filter(
+            Product.Product_ID==product_name).first()
+        
+        if obj == None:
+            msg = 'Product {} not found.'.format(Product_ID)
+            return updateproduct(feedback_message=msg, feedback_type=False)
+
+        if Product_ID != '':
+            obj.Product_ID = Product_ID
+        if Manufacturer_ID != '':
+            obj.Manufacturer_ID = Manufacturer_ID
+        if Product_Price != '':
+            obj.Product_Price = Product_Price
+        if Product_Quantity != '':
+            obj.Product_Quantity = Product_Quantity
+        if Product_Size != '':
+            obj.Product_Size = Product_Size
+        if Product_Type != '':
+            obj.Product_Type = Product_Type
+        if Product_Description != '':
+            obj.Product_Description = Product_Description
+        
+        db.session.commit()
+    except Exception as err:
+        db.session.rollback()
+        return updateproduct(feedback_message=err, feedback_type=False)
+
+    return updateproduct(feedback_message='Successfully updated product {}'.format(Product_ID),
+                       feedback_type=True)
+
+
+#Delete Product
+@app.route("/deleteproduct")
+def deleteproduct(feedback_message=None, feedback_type=False):
+    product_names = [name for name, _, _, _, _, _, _ in getproducts()]
+    return render_template("deleteproduct.html", 
+                           productnames=product_names, 
+                           feedback_message=feedback_message, 
+                           feedback_type=feedback_type)
+
+@app.route("/productdelete", methods=['POST'])
+def productdelete():
+    if not request.form.get('confirmInput'):
+        return deleteproduct(feedback_message='Operation canceled. Product not deleted.', feedback_type=False)
+    
+    product_name = request.form.get('productnames')
+
+    try:
+        obj = db.session.query(Product).filter(
+            Product.Product_ID==product_name).first()
+        
+        if obj == None:
+            msg = 'Product {} not found.'.format(product_name)
+            return deleteproduct(feedback_message=msg, feedback_type=False)
+        
+        db.session.delete(obj)
+        db.session.commit()
+    except Exception as err:
+        db.session.rollback()
+        return deleteproduct(feedback_message=err, feedback_type=False)
+
+    return deleteproduct(feedback_message='Successfully deleted product {}'.format(product_name),
+                       feedback_type=True)
+
+
+
 def getchefs():
     query = select(ChefInfo)
     result = db.session.execute(query)
@@ -511,4 +649,4 @@ def cooksdelete():
 
     return deletecooks(feedback_message='Successfully deleted cooks relationship between {} and {}'.format(chef_name, dish_name),
                        feedback_type=True)
-'''
+
