@@ -1,4 +1,4 @@
-{% extends "layouts/formalayout.html" %}
+{% extends "layouts/formlayout.html" %}
 
 {% block title_form%}
 <h2>Create Manufacturer </h2>
@@ -6,7 +6,7 @@
 
 {% block body_form%}
 
-<form action="{{ url_for('manfCreate')}}" method="post"> <!-- insert URL-->
+<form action="{{ url_for('manfcreate')}}" method="post">
     <h5> Enter the Manufacturer details </h5>
     <div>
         <input type="text" name="manf_id" placeholder="id">
@@ -31,3 +31,5 @@
         <button >Create</button>
     </div>
 </form>
+
+{% endblock %}
