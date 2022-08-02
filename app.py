@@ -9,7 +9,7 @@ import psycopg2
 
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://<user>:<password>@localhost/<appname>'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Xotillweod27*@localhost/csce310-app'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:123456Yyt@localhost/csce310-app'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = 'secret string'
 
@@ -34,8 +34,8 @@ class Employee(db.Model):
 class Manufacturer(db.Model):
     Manufacturer_ID = db.Column(db.Integer, primary_key=True)
     Manufacturer_Name = db.Column(db.String(128))
-    Customer_Email = db.Column(db.String(128))
-    Customer_Phone = db.Column(db.String(128))
+    Manufacturer_Email = db.Column(db.String(128))
+    Manufacturer_Phone = db.Column(db.String(128))
     Manufacturer_Headquarters = db.Column(db.String(128))
     Manufacturer_Description = db.Column(db.String(128))
     Product_Relation = db.relationship('Product', backref='manufacturer', lazy=True)
@@ -70,6 +70,16 @@ class Staff(db.Model):
 if __name__ == '__main__':
     app.run()
 
+def getManf():
+    query = select(Manufacturer)
+    result = db.session.execute(query)
+    
+    manf_list = []
+    for manf in result.scalars():
+        manf_list.append((manf.Manufacturer_Name, manf.Manufacturer_Email,
+                          manf.Manufacturer_Phone, manf.Manufacturer_Headquarters, manf.Manufacturer_Description))
+    return manf_list;
+
 def getemployees():
     query = select(Employee)
     result = db.session.execute(query)
@@ -77,6 +87,48 @@ def getemployees():
     for e in result.scalars():
         emp_list.append((e.Employee_ID, e.Employee_Fname, e.Employee_Lname, e.Employee_Email, e.Employee_Phone, e.Position, e.Hours_Worked, e.Salary))
     return emp_list
+
+#Create Product
+@app.route("/createmanf")
+def createmanf(feedback_message=None, feedback_type=False):
+    return render_template("createManf.html", feedback_message=feedback_message,
+                           feedback_type=feedback_type)
+
+@app.route("/manfcreate", methods=['POST'])
+def manfcreate():
+    id = request.form["manf_id"]
+    name = request.form["manf_name"]
+    email = request.form["manf_email"]
+    phone = request.form["manf_phone"]
+    headquarters = request.form["manf_headquarters"]
+    desc = request.form["manf_description"]
+    
+    try:
+        entry = Manufacturer(Manufacturer_ID = id, Manufacturer_Name = name,
+                             Manufacturer_Email = email, Manufacturer_Phone = phone,
+                             Manufacturer_Headquarters = headquarters, 
+                             Manufacturer_Description = desc)
+        db.session.add(entry)
+        db.session.commit()
+
+
+    except exc.IntegrityError as err:
+        db.session.rollback()
+        return createmanf(feedback_message='A Manufacturer named {} already exists. Create a Manufacturer with a different name.'.format(name), feedback_type=False)
+    except Exception as err:
+        db.session.rollback()
+        return createmanf(feedback_message='Database error: {}'.format(err), feedback_type=False)
+    
+    return createmanf(feedback_message='Successfully added Manufacturer {}'.format(name), ##### might need to change name
+                       feedback_type=True)
+
+def get_manf(manfName):
+    query = select(Manufacturer).where(Manufacturer.Manufacturer_Name == manfName)
+    result = db.session.execute(query)
+    manf = result.scalar()
+    if manf is None:
+        raise('Manufacturer not found')
+    return manf
 
 @app.route("/createemployee")
 def createemployee(feedback_message=None, feedback_type=False):
@@ -223,7 +275,6 @@ def getorders():
         order_list.append((order.Order_ID, order.Store_ID, order.Product_ID, order.Order_Quantity, order.Order_Price, order.Order_Date, order.Received))
     return order_list
 
-#Create Product
 @app.route("/createproduct")
 def createproduct(feedback_message=None, feedback_type=False):
     return render_template("createproduct.html",
@@ -308,6 +359,18 @@ def readorder():
         order_list.append((order.Order_ID, order.Store_ID, order.Product_ID, order.Order_Quantity, order.Order_Price, order.Order_Date, order.Received))
     
     return render_template("readorder.html", orderlist=order_list)
+
+@app.route("/readmanf")
+def readmanf():
+    query = select(Manufacturer)
+    result = db.session.execute(query)
+    
+    manf_list = []
+    for manf in result.scalars(): ####may need to not capitalize here
+        manf_list.append((manf.Manufacturer_ID, manf.Manufacturer_Name, manf.Manufacturer_Headquarters,
+                          manf.Manufacturer_Email, manf.Manufacturer_Phone,  manf.Manufacturer_Description))
+        
+    return render_template("readManf.html", manflist=manf_list)
 
 #Update product
 @app.route("/updateproduct")
@@ -409,7 +472,56 @@ def orderupdate():
 
     return updateorder(feedback_message='Successfully updated order {}'.format(Order_ID),
                        feedback_type=True)
+
+@app.route("/updatemanf") #####may needto fix this part
+def updatemanf(feedback_message=None, feedback_type=False):
+    manf_names = [name for name, _, _, _, _ in getManf()]
+    return render_template("updateManf.html",
+                           manfnames = manf_names,
+                           feedback_message=feedback_message,
+                           feedback_type=feedback_type)
+
+@app.route("/manfupdate", methods=['POST'])
+def manfupdate():
+    manf_name = request.form.get('manfnames')
     
+    name = request.form["name"]
+    hq = request.form["hq"]
+    email = request.form["email"]
+    phone= request.form["phone"]
+    desc = request.form["desc"]
+    
+    try:
+        obj = db.session.query(Manufacturer).filter(
+            Manufacturer.Manufacturer_Name == manf_name).first()
+        
+        if obj == None:
+            msg = 'Manufacturer {} not found.'.format(manf_name)
+            return updatemanf(feedback_message=msg, feedback_type=False)
+        
+        ##may need to capitalize here
+        if name != '':
+            obj.Manufacturer_Name = name
+        if hq != '':
+            obj.Manufacturer_Headquarters = hq
+        if email != '':
+            obj.Manufacturer_Email = email
+        if phone != '':
+            obj.Manufacturer_Phone = phone
+        if desc != '':
+            obj.Manufacturer_Description = desc
+            
+        db.session.commit()
+        
+    except Exception as err:
+        db.session.rollback()
+        return updatemanf(feedback_message=err, feedback_type=False)
+
+    return updatemanf(feedback_message='Successfully updated chef {}'.format(manf_name),
+                       feedback_type=True)
+
+
+
 #Delete
 @app.route("/deleteproduct")
 def deleteproduct(feedback_message=None, feedback_type=False):
@@ -474,7 +586,39 @@ def orderdelete():
 
     return deleteorder(feedback_message='Successfully deleted order {}'.format(order_name),
                        feedback_type=True)
+    
+@app.route("/deletemanf")
+def deletemanf(feedback_message=None, feedback_type=False):
+    manf_names = [name for name, _, _, _, _ in getManf()]
+    return render_template("deleteManf.html", manfnames = manf_names,
+                           feedback_type=feedback_message)
+
+@app.route("/manfdelete", methods=['POST'])
+def manfdelete():
+    if not request.form.get('confirmInput'):
+        return deletemanf(feedback_message='Operation canceled. Manufacturer not deleted', feedback_type=False)
+    
+    manf_name = request.form.get('manfnames')
+    
+    try:
+        obj = db.session.query(Manufacturer).filter(
+            Manufacturer.Manufacturer_Name == manf_name).filter().first()
+        
+        if obj == None:
+            msg = 'Manufacturer {} not found.'.format(manf_name)
+            return deletemanf(feedback_message=msg, feedback_type=False)
+        
+        db.session.delete(obj)
+        db.session.commit()
+    except Exception as err:
+        db.session.rollback()
+        return deletemanf(feedback_message=err, feedback_type=False)
+    
+    return deletemanf(feedback_message='Successfully deleted Manufacturer {}'.format(manf_name),
+                      feedback_type=True)
 
 @app.route('/')
 def home():
     return render_template('home.html')
+
+
