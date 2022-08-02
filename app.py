@@ -9,7 +9,7 @@ import psycopg2
 
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://<user>:<password>@localhost/<appname>'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:password@localhost/DeTail'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Xotillweod27*@localhost/csce310-app'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = 'secret string'
 
@@ -69,6 +69,141 @@ class Staff(db.Model):
 
 if __name__ == '__main__':
     app.run()
+
+def getemployees():
+    query = select(Employee)
+    result = db.session.execute(query)
+    emp_list = []
+    for e in result.scalars():
+        emp_list.append((e.Employee_ID, e.Employee_Fname, e.Employee_Lname, e.Employee_Email, e.Employee_Phone, e.Position, e.Hours_Worked, e.Salary))
+    return emp_list
+
+@app.route("/createemployee")
+def createemployee(feedback_message=None, feedback_type=False):
+    return render_template("createemployee.html",
+            feedback_message=feedback_message, 
+            feedback_type=feedback_type)
+@app.route("/employeecreate", methods=['POST'])
+def employeecreate():
+    Employee_ID = request.form["Employee_ID"]
+    Employee_Fname = request.form["Employee_Fname"]
+    Employee_Lname = request.form["Employee_Lname"]
+    Employee_Email = request.form["Employee_Email"]
+    Employee_Phone = request.form["Employee_Phone"]
+    Position = request.form["Position"]
+    Hours_Worked = request.form["Hours_Worked"]
+    Salary = request.form["Salary"]
+    try:
+        entry = Employee(Employee_ID=Employee_ID, Employee_Fname=Employee_Fname, Employee_Lname=Employee_Lname, 
+            Employee_Email=Employee_Email, Employee_Phone=Employee_Phone, Position=Position, 
+            Hours_Worked=Hours_Worked, Salary=Salary)
+        db.session.add(entry)
+        db.session.commit()
+    except exc.IntegrityError as err:
+        db.session.rollback()
+        return createemployee(feedback_message='An employee with name {} {} already exists. Create an employee with a different name.'.format(Employee_Fname, Employee_Lname), feedback_type=False)
+    except Exception as err:
+        db.session.rollback()
+        return createemployee(feedback_message='Database error: {} '.format(err), feedback_type=False)
+    return createemployee(feedback_message='Successfully added employee {} {} '.format(Employee_Fname, Employee_Lname),
+                       feedback_type=True)
+
+@app.route("/reademployee")
+def reademployee():
+    query = select(Employee)
+    result = db.session.execute(query)
+
+    emp_list = []
+    for e in result.scalars():
+        emp_list.append((e.Employee_ID, e.Employee_Fname, e.Employee_Lname, e.Employee_Email, e.Employee_Phone, e.Position, e.Hours_Worked, e.Salary))
+    
+    return render_template("reademployee.html", empList=emp_list)
+
+@app.route("/updateemployee")
+def updateemployee(feedback_message=None, feedback_type=False):
+    employee_IDs = [name for name, _, _, _, _, _, _, _ in getemployees()]
+    return render_template("updateemployee.html", 
+                           employeeIDs = employee_IDs, 
+                           feedback_message=feedback_message, 
+                           feedback_type=feedback_type)
+
+@app.route("/employeeupdate", methods=['POST'])
+def employeeupdate():
+    e_ID = request.form.get('employeeIDs')
+    Employee_ID = request.form["Employee_ID"]
+    Employee_Fname = request.form["Employee_Fname"]
+    Employee_Lname = request.form["Employee_Lname"]
+    Employee_Email = request.form["Employee_Email"]
+    Employee_Phone = request.form["Employee_Phone"]
+    Position = request.form["Position"]
+    Hours_Worked = request.form["Hours_Worked"]
+    Salary = request.form["Salary"]
+
+    try:
+        obj = db.session.query(Employee).filter(
+            Employee.Employee_ID==e_ID).first()
+        
+        if obj == None:
+            msg = 'Employee {} not found.'.format(e_ID)
+            return updateemployee(feedback_message=msg, feedback_type=False)
+        if Employee_ID != '':
+            obj.Employee_ID = Employee_ID
+        else:
+            obj.Employee_ID = e_ID
+        if Employee_Fname != '':
+            obj.Employee_Fname = Employee_Fname
+        if Employee_Lname != '':
+            obj.Employee_Lname = Employee_Lname
+        if Employee_Email != '':
+            obj.Employee_Email = Employee_Email
+        if Employee_Phone != '':
+            obj.Employee_Phone = Employee_Phone
+        if Position != '':
+            obj.Position = Position
+        if Hours_Worked != '':
+            obj.Hours_Worked = Hours_Worked
+        if Salary != '':
+            obj.Salary = Salary
+        
+        db.session.commit()
+    except Exception as err:
+        db.session.rollback()
+        return updateemployee(feedback_message=err, feedback_type=False)
+
+    return updateemployee(feedback_message='Successfully updated employee with ID {}'.format(e_ID),
+                       feedback_type=True)
+
+@app.route("/deleteemployee")
+def deleteemployee(feedback_message=None, feedback_type=False):
+    employee_IDs = [name for name, _, _, _, _, _, _, _ in getemployees()]
+    return render_template("deleteemployee.html", 
+                           employeeIDs=employee_IDs, 
+                           feedback_message=feedback_message, 
+                           feedback_type=feedback_type)
+
+@app.route("/employeedelete", methods=['POST'])
+def employeedelete():
+    if not request.form.get('confirmInput'):
+        return deleteemployee(feedback_message='Operation canceled. Employee not deleted.', feedback_type=False)
+    
+    employee_ID = request.form.get('employeeIDs')
+
+    try:
+        obj = db.session.query(Employee).filter(
+            Employee.Employee_ID==employee_ID).first()
+        
+        if obj == None:
+            msg = 'Employee {} not found.'.format(employee_ID)
+            return deleteemployee(feedback_message=msg, feedback_type=False)
+        
+        db.session.delete(obj)
+        db.session.commit()
+    except Exception as err:
+        db.session.rollback()
+        return deleteemployee(feedback_message=err, feedback_type=False)
+
+    return deleteemployee(feedback_message='Successfully deleted employee with {}'.format(employee_ID),
+                       feedback_type=True)
 
 def getproducts():
     query = select(Product)
