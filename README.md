@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # CSCE 310 - Sample App Python
 
 ## Introduction ##
@@ -79,3 +80,7 @@ in your preferred terminal. The flask application should start automatically. It
 ## Support
 
 If you have any issues executing this application, do not hesitate to contact the responsible TA at [pedrofigueiredo@tamu.edu](pedrofigueiredo@tamu.edu), or attend his office hours.
+=======
+# project-example-python
+Repository holding the source code of the example Python project for CSCE 310, Summer 2022.
+>>>>>>> Initial commit
