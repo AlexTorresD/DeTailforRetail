@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Python Application Upload
 # CSCE 310 - Sample App Python
 
 ## Introduction ##
