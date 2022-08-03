@@ -559,20 +559,28 @@ def manfupdate():
 
     return updatemanf(feedback_message='Successfully updated chef {}'.format(manf_name),
                        feedback_type=True)
-
+#UPDATE STAFF
 @app.route("/updatestaff")
 def updatestaff(feedback_message=None, feedback_type=False): #DONE BY ELVIS
-    staff_name = [name for name ,_, _ in getstaff()]
+    staff_names = [name for name ,_, _ in getstaff()]
     #     order_names = [name for name, _, _, _, _, _, _ in getorders()]
-    return render_template("updatestaff.html", staffnames=staff_name, feedback_message=feedback_message, feedback_type=feedback_type)
+    return render_template("updatestaff.html", 
+    staffname=staff_names, 
+    feedback_message=feedback_message, 
+    feedback_type=feedback_type)
 
 
 @app.route("/staffupdate", methods=['POST'])
 def staffupdate(): #DONE BY ELVIS
-    Staff_ID = request.form.get("Staff_ID"); Store_ID = request.form.get("Store_ID"); Employee_ID = request.form.get("Employee_ID")
+    staff_name = request.form.get('staffnames')
+    Staff_ID = request.form["Staff_ID"]; 
+    Store_ID = request.form["Store_ID"]; 
+    Employee_ID = request.form["Employee_ID"]
     try:
-        obj = Staff.query.filter_by(Staff_ID=Staff_ID).first()
-        if obj == '':
+        obj = db.session.query(Staff).filter(
+            Staff.Staff_ID==staff_name).first()
+        
+        if obj == None:
             return updatestaff(feedback_message='Staff ' + Staff_ID + ' does not exist. Please try again.', feedback_type=False)
         if Store_ID != '':
             obj.Store_ID = Store_ID
@@ -586,17 +594,26 @@ def staffupdate(): #DONE BY ELVIS
         return updatestaff(feedback_message='An error occurred. Please try again.', feedback_type=False)
     return updatestaff(feedback_message='Staff ' + Staff_ID + ' updated successfully.', feedback_type=True)
 
+#UPDATE STORE
 @app.route("/updatestore")
 def updatestore(feedback_message=None, feedback_type=False): #DONE BY ELVIS
-    store_name = [name for name ,_, _ in getstore()]
-    return render_template("updatestore.html", storename=store_name, feedback_message=feedback_message, feedback_type=feedback_type)
+    store_names = [name for name ,_, _ in getstore()]
+    return render_template("updatestore.html", 
+    storenames=store_names, 
+    feedback_message=feedback_message, 
+    feedback_type=feedback_type)
 @app.route("/storeupdate", methods=['POST'])
 def storeupdate(): #DONE BY ELVIS
-    Store_ID = request.form.get("Store_ID"); Store_Name = request.form.get("Store_Name"); Location = request.form.get("Location")
+    store_name = request.form.get('storenames')
+    Store_ID = request.form["Store_ID"]
+    Store_Name = request.form["Store_Name"]
+    Location = request.form["Location"]
     try:
-        obj = Store.query.filter_by(Store_ID=Store_ID).first()
-        if obj == '':
-            return updatestore(feedback_message='Store ' + Store_ID + ' does not exist. Please try again.', feedback_type=False)
+        obj = db.session.query(Store).filter(
+            Store.Store_ID==store_name).first()
+        if obj == None:
+            msg = 'Store {} not found.'.format(store_name)
+            return updatestaff(feedback_message=msg, feedback_type=False)
         if Store_ID != '':
             obj.Store_ID = Store_ID
         if Store_Name != '':
@@ -607,7 +624,7 @@ def storeupdate(): #DONE BY ELVIS
     except Exception as ERROR:
         db.session.rollback()
         return updatestore(feedback_message='An error occurred. Please try again.', feedback_type=False)
-    return updatestore(feedback_message='Store ' + Store_ID + ' updated successfully.', feedback_type=True)
+    return updatestore(feedback_message='Staff ' + Store_ID + ' updated successfully.', feedback_type=True)
 
 #
 # DELETE
@@ -615,43 +632,51 @@ def storeupdate(): #DONE BY ELVIS
 
 @app.route("/deletestaff")
 def deletestaff(feedback_message=None, feedback_type=False): #DONE BY ELVIS
-    staff_name = [name for name ,_, _ in getstaff()]
-    return render_template("deletestaff.html", staffnames=staff_name, feedback_message=feedback_message, feedback_type=feedback_type)
+    staff_names = [name for name ,_ , _ in getstaff()]
+    return render_template("deletestaff.html", 
+    staffnames=staff_names, 
+    feedback_message=feedback_message, 
+    feedback_type=feedback_type)
 @app.route("/staffdelete", methods=['POST']) #DONE BY ELVIS
 def staffdelete():
     if not request.form.get('confirmInput'):
         return deletestaff(feedback_message='Please confirm deletion.', feedback_type=False)
-    Staff_ID = request.form.get("Staff_ID")
+    staff_name = request.form.get("staffnames")
     try:
-        obj = Staff.query.filter_by(Staff_ID=Staff_ID).first()
-        if obj == '':
-            return deletestaff(feedback_message='Staff ' + Staff_ID + ' does not exist. Please try again.', feedback_type=False)
+        obj = db.session.query(Staff).filter(
+            Staff.Staff_ID==staff_name).first()
+        if obj == None:
+            return deletestaff(feedback_message='Staff does not exist. Please try again.', feedback_type=False)
         db.session.delete(obj)
         db.session.commit()
     except Exception as ERROR:
         db.session.rollback()
         return deletestaff(feedback_message='An error occurred. Please try again.', feedback_type=False)
-    return deletestaff(feedback_message='Staff ' + Staff_ID + ' deleted successfully.', feedback_type=True)
+    return deletestaff(feedback_message='Staff deleted successfully.', feedback_type=True)
 
 @app.route("/deletestore")
 def deletestore(feedback_message=None, feedback_type=False): #DONE BY ELVIS
-    store_name = [name for name ,_, _ in getstore()]
-    return render_template("deletestore.html", storenames=store_name, feedback_message=feedback_message, feedback_type=feedback_type)
+    store_names = [name for name ,_ , _ in getstore()]
+    return render_template("deletestore.html", 
+    storenames=store_names, 
+    feedback_message=feedback_message, 
+    feedback_type=feedback_type)
 @app.route("/storedelete", methods=['POST']) #DONE BY ELVIS
 def storedelete():
     if not request.form.get('confirmInput'):
         return deletestore(feedback_message='Please confirm deletion.', feedback_type=False)
-    Store_ID = request.form.get("Store_ID")
+    store_name = request.form.get("storenames")
     try:
-        obj = Store.query.filter_by(Store_ID=Store_ID).first()
-        if obj == '':
-            return deletestore(feedback_message='Store ' + Store_ID + ' does not exist. Please try again.', feedback_type=False)
+        obj = db.session.query(Store).filter(
+            Store.Store_ID==store_name).first()
+        if obj == None:
+            return deletestore(feedback_message='Store does not exist. Please try again.', feedback_type=False)
         db.session.delete(obj)
         db.session.commit()
     except Exception as ERROR:
         db.session.rollback()
         return deletestore(feedback_message='An error occurred. Please try again.', feedback_type=False)
-    return deletestore(feedback_message='Store ' + Store_ID + ' deleted successfully.', feedback_type=True)
+    return deletestore(feedback_message='Store deleted successfully.', feedback_type=True)
 
 @app.route("/deleteproduct")
 def deleteproduct(feedback_message=None, feedback_type=False):
@@ -782,5 +807,3 @@ def manfdelete():
 @app.route('/')
 def home():
     return render_template('home.html')
-
-
