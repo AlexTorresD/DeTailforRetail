@@ -9,7 +9,7 @@ import psycopg2
 
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://<user>:<password>@localhost/<appname>'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:123456Yyt@localhost/csce310-app'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:password@localhost/DeTail'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = 'secret string'
 
@@ -88,7 +88,50 @@ def getemployees():
         emp_list.append((e.Employee_ID, e.Employee_Fname, e.Employee_Lname, e.Employee_Email, e.Employee_Phone, e.Position, e.Hours_Worked, e.Salary))
     return emp_list
 
-#Create Product
+def getstaff(): #DONE BY ELVIS
+    query = select(Staff)
+    result = db.session.execute(query)
+    staff_list = []
+    for staff in result.scalars():
+        staff_list.append((staff.Staff_ID, staff.Store_ID, staff.Employee_ID))
+    return staff_list
+
+def getstore(): #DONE BY ELVIS
+    query = select(Store)
+    result = db.session.execute(query)
+    store_list = []
+    for store in result.scalars():
+        store_list.append((store.Store_ID, store.Store_Name, store.Location))
+    return store_list
+    
+def get_manf(manfName):
+    query = select(Manufacturer).where(Manufacturer.Manufacturer_Name == manfName)
+    result = db.session.execute(query)
+    manf = result.scalar()
+    if manf is None:
+        raise('Manufacturer not found')
+    return manf
+
+def getproducts():
+    query = select(Product)
+    result = db.session.execute(query)
+
+    product_list = []
+    for product in result.scalars():
+        product_list.append((product.Product_ID, product.Manufacturer_ID, product.Product_Price, product.Product_Quantity, product.Product_Size, product.Product_Type, product.Product_Description))
+    return product_list
+
+def getorders():
+    query = select(Orders)
+    result = db.session.execute(query)
+
+    order_list = []
+    for order in result.scalars():
+        order_list.append((order.Order_ID, order.Store_ID, order.Product_ID, order.Order_Quantity, order.Order_Price, order.Order_Date, order.Received))
+    return order_list
+
+#CREATE
+
 @app.route("/createmanf")
 def createmanf(feedback_message=None, feedback_type=False):
     return render_template("createManf.html", feedback_message=feedback_message,
@@ -122,19 +165,12 @@ def manfcreate():
     return createmanf(feedback_message='Successfully added Manufacturer {}'.format(name), ##### might need to change name
                        feedback_type=True)
 
-def get_manf(manfName):
-    query = select(Manufacturer).where(Manufacturer.Manufacturer_Name == manfName)
-    result = db.session.execute(query)
-    manf = result.scalar()
-    if manf is None:
-        raise('Manufacturer not found')
-    return manf
-
 @app.route("/createemployee")
 def createemployee(feedback_message=None, feedback_type=False):
     return render_template("createemployee.html",
             feedback_message=feedback_message, 
             feedback_type=feedback_type)
+
 @app.route("/employeecreate", methods=['POST'])
 def employeecreate():
     Employee_ID = request.form["Employee_ID"]
@@ -160,120 +196,42 @@ def employeecreate():
     return createemployee(feedback_message='Successfully added employee {} {} '.format(Employee_Fname, Employee_Lname),
                        feedback_type=True)
 
-@app.route("/reademployee")
-def reademployee():
-    query = select(Employee)
-    result = db.session.execute(query)
+@app.route("/createstore") 
+def createstore(feedback_message=None, feedback_type=False): #DONE BY ELVIS
+    return render_template("createstore.html", feedback_message=feedback_message, feedback_type=feedback_type)
 
-    emp_list = []
-    for e in result.scalars():
-        emp_list.append((e.Employee_ID, e.Employee_Fname, e.Employee_Lname, e.Employee_Email, e.Employee_Phone, e.Position, e.Hours_Worked, e.Salary))
-    
-    return render_template("reademployee.html", empList=emp_list)
-
-@app.route("/updateemployee")
-def updateemployee(feedback_message=None, feedback_type=False):
-    employee_IDs = [name for name, _, _, _, _, _, _, _ in getemployees()]
-    return render_template("updateemployee.html", 
-                           employeeIDs = employee_IDs, 
-                           feedback_message=feedback_message, 
-                           feedback_type=feedback_type)
-
-@app.route("/employeeupdate", methods=['POST'])
-def employeeupdate():
-    e_ID = request.form.get('employeeIDs')
-    Employee_ID = request.form["Employee_ID"]
-    Employee_Fname = request.form["Employee_Fname"]
-    Employee_Lname = request.form["Employee_Lname"]
-    Employee_Email = request.form["Employee_Email"]
-    Employee_Phone = request.form["Employee_Phone"]
-    Position = request.form["Position"]
-    Hours_Worked = request.form["Hours_Worked"]
-    Salary = request.form["Salary"]
-
+@app.route("/storecreate", methods=['POST'])
+def storecreate(): #DONE BY ELVIS
+    Store_ID = request.form.get("Store_ID"); Store_Name = request.form.get("Store_Name"); Location = request.form.get("Location")
     try:
-        obj = db.session.query(Employee).filter(
-            Employee.Employee_ID==e_ID).first()
-        
-        if obj == None:
-            msg = 'Employee {} not found.'.format(e_ID)
-            return updateemployee(feedback_message=msg, feedback_type=False)
-        if Employee_ID != '':
-            obj.Employee_ID = Employee_ID
-        else:
-            obj.Employee_ID = e_ID
-        if Employee_Fname != '':
-            obj.Employee_Fname = Employee_Fname
-        if Employee_Lname != '':
-            obj.Employee_Lname = Employee_Lname
-        if Employee_Email != '':
-            obj.Employee_Email = Employee_Email
-        if Employee_Phone != '':
-            obj.Employee_Phone = Employee_Phone
-        if Position != '':
-            obj.Position = Position
-        if Hours_Worked != '':
-            obj.Hours_Worked = Hours_Worked
-        if Salary != '':
-            obj.Salary = Salary
-        
-        db.session.commit()
-    except Exception as err:
+        entry = Store(Store_ID=Store_ID, Store_Name=Store_Name, Location=Location)
+        db.session.add(entry); db.session.commit()
+    except exc.IntegrityError as ERROR:
         db.session.rollback()
-        return updateemployee(feedback_message=err, feedback_type=False)
+        return createstore(feedback_message='ID' + Store_ID + "already exists. Please try again.", feedback_type=False)
+    except Exception as ERROR:
+        db.session.rollback()
+        return createstore(feedback_message='An error occurred. Please try again.', feedback_type=False)
+    return createstore(feedback_message='Store ' + Store_ID + ' created successfully.', feedback_type=True)
+        #create staff and staff create
 
-    return updateemployee(feedback_message='Successfully updated employee with ID {}'.format(e_ID),
-                       feedback_type=True)
+@app.route("/createstaff")
+def createstaff(feedback_message=None, feedback_type=False): #DONE BY ELVIS
+    return render_template("createstaff.html", feedback_message=feedback_message, feedback_type=feedback_type)
 
-@app.route("/deleteemployee")
-def deleteemployee(feedback_message=None, feedback_type=False):
-    employee_IDs = [name for name, _, _, _, _, _, _, _ in getemployees()]
-    return render_template("deleteemployee.html", 
-                           employeeIDs=employee_IDs, 
-                           feedback_message=feedback_message, 
-                           feedback_type=feedback_type)
-
-@app.route("/employeedelete", methods=['POST'])
-def employeedelete():
-    if not request.form.get('confirmInput'):
-        return deleteemployee(feedback_message='Operation canceled. Employee not deleted.', feedback_type=False)
-    
-    employee_ID = request.form.get('employeeIDs')
-
+@app.route("/staffcreate", methods=['POST'])
+def staffcreate(): #DONE BY ELVIS
+    Staff_ID = request.form.get("Staff_ID"); Store_ID = request.form.get("Store_ID"); Employee_ID = request.form.get("Employee_ID")
     try:
-        obj = db.session.query(Employee).filter(
-            Employee.Employee_ID==employee_ID).first()
-        
-        if obj == None:
-            msg = 'Employee {} not found.'.format(employee_ID)
-            return deleteemployee(feedback_message=msg, feedback_type=False)
-        
-        db.session.delete(obj)
-        db.session.commit()
-    except Exception as err:
+        entry = Staff(Staff_ID=Staff_ID, Store_ID=Store_ID, Employee_ID=Employee_ID)
+        db.session.add(entry); db.session.commit()
+    except exc.IntegrityError as ERROR:
         db.session.rollback()
-        return deleteemployee(feedback_message=err, feedback_type=False)
-
-    return deleteemployee(feedback_message='Successfully deleted employee with {}'.format(employee_ID),
-                       feedback_type=True)
-
-def getproducts():
-    query = select(Product)
-    result = db.session.execute(query)
-
-    product_list = []
-    for product in result.scalars():
-        product_list.append((product.Product_ID, product.Manufacturer_ID, product.Product_Price, product.Product_Quantity, product.Product_Size, product.Product_Type, product.Product_Description))
-    return product_list
-
-def getorders():
-    query = select(Orders)
-    result = db.session.execute(query)
-
-    order_list = []
-    for order in result.scalars():
-        order_list.append((order.Order_ID, order.Store_ID, order.Product_ID, order.Order_Quantity, order.Order_Price, order.Order_Date, order.Received))
-    return order_list
+        return createstaff(feedback_message='ID' + Staff_ID + "already exists. Please try again.", feedback_type=False)
+    except Exception as ERROR:
+        db.session.rollback()
+        return createstaff(feedback_message='An error occurred. Please try again.', feedback_type=False)
+    return createstaff(feedback_message='Staff ' + Staff_ID + ' created successfully.', feedback_type=True)
 
 @app.route("/createproduct")
 def createproduct(feedback_message=None, feedback_type=False):
@@ -337,7 +295,36 @@ def ordercreate():
     return createorder(feedback_message='Successfully added order {}'.format(Order_ID),
                        feedback_type=True)
 
-#Read 
+#READ
+
+@app.route("/reademployee")
+def reademployee():
+    query = select(Employee)
+    result = db.session.execute(query)
+
+    emp_list = []
+    for e in result.scalars():
+        emp_list.append((e.Employee_ID, e.Employee_Fname, e.Employee_Lname, e.Employee_Email, e.Employee_Phone, e.Position, e.Hours_Worked, e.Salary))
+    return render_template("reademployee.html", empList=emp_list)
+
+@app.route("/readstaff")
+def readstaff(): #DONE BY ELVIS
+    query = select(Staff)
+    result = db.session.execute(query)
+    staff_list = []
+    for staff in result.scalars():
+        staff_list.append((staff.Staff_ID, staff.Store_ID, staff.Employee_ID))
+    return render_template("readstaff.html", staff_list=staff_list)
+
+@app.route("/readstore")
+def readstore(): #DONE BY ELVIS
+    query = select(Store)
+    result = db.session.execute(query)
+    store_list = []
+    for store in result.scalars():
+        store_list.append((store.Store_ID, store.Store_Name, store.Location))
+    return render_template("readstore.html", store_list=store_list)
+
 @app.route("/readproduct")
 def readproduct():
     query = select(Product)
@@ -472,6 +459,59 @@ def orderupdate():
 
     return updateorder(feedback_message='Successfully updated order {}'.format(Order_ID),
                        feedback_type=True)
+@app.route("/updateemployee")
+def updateemployee(feedback_message=None, feedback_type=False):
+    employee_IDs = [name for name, _, _, _, _, _, _, _ in getemployees()]
+    return render_template("updateemployee.html", 
+                           employeeIDs = employee_IDs, 
+                           feedback_message=feedback_message, 
+                           feedback_type=feedback_type)
+
+@app.route("/employeeupdate", methods=['POST'])
+def employeeupdate():
+    e_ID = request.form.get('employeeIDs')
+    Employee_ID = request.form["Employee_ID"]
+    Employee_Fname = request.form["Employee_Fname"]
+    Employee_Lname = request.form["Employee_Lname"]
+    Employee_Email = request.form["Employee_Email"]
+    Employee_Phone = request.form["Employee_Phone"]
+    Position = request.form["Position"]
+    Hours_Worked = request.form["Hours_Worked"]
+    Salary = request.form["Salary"]
+
+    try:
+        obj = db.session.query(Employee).filter(
+            Employee.Employee_ID==e_ID).first()
+        
+        if obj == None:
+            msg = 'Employee {} not found.'.format(e_ID)
+            return updateemployee(feedback_message=msg, feedback_type=False)
+        if Employee_ID != '':
+            obj.Employee_ID = Employee_ID
+        else:
+            obj.Employee_ID = e_ID
+        if Employee_Fname != '':
+            obj.Employee_Fname = Employee_Fname
+        if Employee_Lname != '':
+            obj.Employee_Lname = Employee_Lname
+        if Employee_Email != '':
+            obj.Employee_Email = Employee_Email
+        if Employee_Phone != '':
+            obj.Employee_Phone = Employee_Phone
+        if Position != '':
+            obj.Position = Position
+        if Hours_Worked != '':
+            obj.Hours_Worked = Hours_Worked
+        if Salary != '':
+            obj.Salary = Salary
+        
+        db.session.commit()
+    except Exception as err:
+        db.session.rollback()
+        return updateemployee(feedback_message=err, feedback_type=False)
+
+    return updateemployee(feedback_message='Successfully updated employee with ID {}'.format(e_ID),
+                       feedback_type=True)
 
 @app.route("/updatemanf") #####may needto fix this part
 def updatemanf(feedback_message=None, feedback_type=False):
@@ -520,9 +560,99 @@ def manfupdate():
     return updatemanf(feedback_message='Successfully updated chef {}'.format(manf_name),
                        feedback_type=True)
 
+@app.route("/updatestaff")
+def updatestaff(feedback_message=None, feedback_type=False): #DONE BY ELVIS
+    staff_name = [name for name ,_, _ in getstaff()]
+    #     order_names = [name for name, _, _, _, _, _, _ in getorders()]
+    return render_template("updatestaff.html", staffnames=staff_name, feedback_message=feedback_message, feedback_type=feedback_type)
 
 
-#Delete
+@app.route("/staffupdate", methods=['POST'])
+def staffupdate(): #DONE BY ELVIS
+    Staff_ID = request.form.get("Staff_ID"); Store_ID = request.form.get("Store_ID"); Employee_ID = request.form.get("Employee_ID")
+    try:
+        obj = Staff.query.filter_by(Staff_ID=Staff_ID).first()
+        if obj == '':
+            return updatestaff(feedback_message='Staff ' + Staff_ID + ' does not exist. Please try again.', feedback_type=False)
+        if Store_ID != '':
+            obj.Store_ID = Store_ID
+        if Employee_ID != '':
+            obj.Employee_ID = Employee_ID
+        if Staff_ID != '':
+            obj.Staff_ID = Staff_ID
+        db.session.commit()
+    except Exception as ERROR:
+        db.session.rollback()
+        return updatestaff(feedback_message='An error occurred. Please try again.', feedback_type=False)
+    return updatestaff(feedback_message='Staff ' + Staff_ID + ' updated successfully.', feedback_type=True)
+
+@app.route("/updatestore")
+def updatestore(feedback_message=None, feedback_type=False): #DONE BY ELVIS
+    store_name = [name for name ,_, _ in getstore()]
+    return render_template("updatestore.html", storename=store_name, feedback_message=feedback_message, feedback_type=feedback_type)
+@app.route("/storeupdate", methods=['POST'])
+def storeupdate(): #DONE BY ELVIS
+    Store_ID = request.form.get("Store_ID"); Store_Name = request.form.get("Store_Name"); Location = request.form.get("Location")
+    try:
+        obj = Store.query.filter_by(Store_ID=Store_ID).first()
+        if obj == '':
+            return updatestore(feedback_message='Store ' + Store_ID + ' does not exist. Please try again.', feedback_type=False)
+        if Store_ID != '':
+            obj.Store_ID = Store_ID
+        if Store_Name != '':
+            obj.Store_Name = Store_Name
+        if Location != '':
+            obj.Location = Location
+        db.session.commit()
+    except Exception as ERROR:
+        db.session.rollback()
+        return updatestore(feedback_message='An error occurred. Please try again.', feedback_type=False)
+    return updatestore(feedback_message='Store ' + Store_ID + ' updated successfully.', feedback_type=True)
+
+#
+# DELETE
+#
+
+@app.route("/deletestaff")
+def deletestaff(feedback_message=None, feedback_type=False): #DONE BY ELVIS
+    staff_name = [name for name ,_, _ in getstaff()]
+    return render_template("deletestaff.html", staffnames=staff_name, feedback_message=feedback_message, feedback_type=feedback_type)
+@app.route("/staffdelete", methods=['POST']) #DONE BY ELVIS
+def staffdelete():
+    if not request.form.get('confirmInput'):
+        return deletestaff(feedback_message='Please confirm deletion.', feedback_type=False)
+    Staff_ID = request.form.get("Staff_ID")
+    try:
+        obj = Staff.query.filter_by(Staff_ID=Staff_ID).first()
+        if obj == '':
+            return deletestaff(feedback_message='Staff ' + Staff_ID + ' does not exist. Please try again.', feedback_type=False)
+        db.session.delete(obj)
+        db.session.commit()
+    except Exception as ERROR:
+        db.session.rollback()
+        return deletestaff(feedback_message='An error occurred. Please try again.', feedback_type=False)
+    return deletestaff(feedback_message='Staff ' + Staff_ID + ' deleted successfully.', feedback_type=True)
+
+@app.route("/deletestore")
+def deletestore(feedback_message=None, feedback_type=False): #DONE BY ELVIS
+    store_name = [name for name ,_, _ in getstore()]
+    return render_template("deletestore.html", storenames=store_name, feedback_message=feedback_message, feedback_type=feedback_type)
+@app.route("/storedelete", methods=['POST']) #DONE BY ELVIS
+def storedelete():
+    if not request.form.get('confirmInput'):
+        return deletestore(feedback_message='Please confirm deletion.', feedback_type=False)
+    Store_ID = request.form.get("Store_ID")
+    try:
+        obj = Store.query.filter_by(Store_ID=Store_ID).first()
+        if obj == '':
+            return deletestore(feedback_message='Store ' + Store_ID + ' does not exist. Please try again.', feedback_type=False)
+        db.session.delete(obj)
+        db.session.commit()
+    except Exception as ERROR:
+        db.session.rollback()
+        return deletestore(feedback_message='An error occurred. Please try again.', feedback_type=False)
+    return deletestore(feedback_message='Store ' + Store_ID + ' deleted successfully.', feedback_type=True)
+
 @app.route("/deleteproduct")
 def deleteproduct(feedback_message=None, feedback_type=False):
     product_names = [name for name, _, _, _, _, _, _ in getproducts()]
@@ -586,7 +716,39 @@ def orderdelete():
 
     return deleteorder(feedback_message='Successfully deleted order {}'.format(order_name),
                        feedback_type=True)
+
+@app.route("/deleteemployee")
+def deleteemployee(feedback_message=None, feedback_type=False):
+    employee_IDs = [name for name, _, _, _, _, _, _, _ in getemployees()]
+    return render_template("deleteemployee.html", 
+                           employeeIDs=employee_IDs, 
+                           feedback_message=feedback_message, 
+                           feedback_type=feedback_type)
+
+@app.route("/employeedelete", methods=['POST'])
+def employeedelete():
+    if not request.form.get('confirmInput'):
+        return deleteemployee(feedback_message='Operation canceled. Employee not deleted.', feedback_type=False)
     
+    employee_ID = request.form.get('employeeIDs')
+
+    try:
+        obj = db.session.query(Employee).filter(
+            Employee.Employee_ID==employee_ID).first()
+        
+        if obj == None:
+            msg = 'Employee {} not found.'.format(employee_ID)
+            return deleteemployee(feedback_message=msg, feedback_type=False)
+        
+        db.session.delete(obj)
+        db.session.commit()
+    except Exception as err:
+        db.session.rollback()
+        return deleteemployee(feedback_message=err, feedback_type=False)
+
+    return deleteemployee(feedback_message='Successfully deleted employee with {}'.format(employee_ID),
+                       feedback_type=True)
+
 @app.route("/deletemanf")
 def deletemanf(feedback_message=None, feedback_type=False):
     manf_names = [name for name, _, _, _, _ in getManf()]
