@@ -1,0 +1,21 @@
+{% extends "layouts/formlayout.html" %}
+
+{% block title_form %}
+<h2>Delete Staff</h2>
+{% endblock %}
+
+{% block body_form %}
+<form action="{{ url_for('staffdelete')}}" method="post">
+  <label for="staffnames">Select staff</label>
+  <select name="staffnames">
+    {% for name in staffnames %}
+      <option value="{{ name }}">{{ name }}</option>
+    {% endfor %} 
+  </select>
+  <div>
+    <input type="hidden" id="confirmInput" name="confirmInput"> 
+    <button type="submit" name="delete_button" value="delete_button" onClick="confirmDelete('staff')"> Delete </button>
+  </div>
+</form>
+
+{% endblock %}

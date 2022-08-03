@@ -1,18 +1,17 @@
-# CSCE 310 - Sample App Python
+# Retail For Detail Readme
 
 ## Introduction ##
 
-This project provides sample code for the project of CSCE 310 of Summer 2022.
-Implemented in Python 3, we use PostgreSQL as our server, SQLAlchemy and Flask as our backend, and HTML as our frontend.
+This project provides a solution to franchises that conduct frequent business to business transactions. Our app allows them to keep information about their manufacturers, employees, stores, and orders. Additionally stores can keep track of their product inventory, manage employee salary, etc. We used python 3 along with PostgreSQL as our server. For the backend, we used SQLAlchemy and Flask. For the Frontend we used HTML. 
 
 ## Requirements ##
 
 * PostgreSQL - 14
-* Python 3.10
+* Python 3.10.4
 * SQLAlchemy - 1.4.36
-* Flask - 2.1.2
+* Flask - 2.0.1
 * Flask-SQLAlchemy - v2.5.1
-
+* Git
 
 ## Installation ##
 
@@ -21,6 +20,12 @@ First, install [PostgreSQL](https://www.postgresql.org/download/) in your machin
 For the remaining dependencies, you may choose to install them independently or via our anaconda environment file.
 We provide an environment.yml file to facilitate cloning a anaconda virtual environment that includes all our dependencies.
 Make sure you have Anaconda installed. If not, install it via your preferred conda installer. We recommend [MiniConda](https://docs.conda.io/en/latest/miniconda.html).
+
+To clone our repository, simply enter
+
+```
+git clone 
+```
 
 To clone our provided environment, simply enter the following in an anaconda-enabled terminal:
 
@@ -31,7 +36,7 @@ conda env create -f environment.yml
 Then, you can activate the environment by using:
  
 ```
-conda activate csce310app
+conda activate detailforretail
 ```
 
 
@@ -45,7 +50,7 @@ To do that, you should first update the database credentials in the beginning of
 
  For simplicity, our application follows the default postgres username, and it's executed on localhost, as follows:
 
- `postgresql://postgres:supersecretpassword@localhost/csce310-app`
+ `postgresql://[insertDBusername]:[insertDBpassword]@localhost/[DatabaseName]`
 
  With updated credentials, you can now deploy the tables.
  Navigate to the root directory of our application, and open a Python console in your preferred terminal by typing:
@@ -67,7 +72,7 @@ You can verify that all tables were created by querying a database client with u
 
 ## Execute Application ##
 
-To run our web application, simply run the command 
+To run our web application, simply run the command
 
 ```
 flask run
@@ -78,11 +83,4 @@ in your preferred terminal. The flask application should start automatically. It
 
 ## Support
 
-If you have any issues executing this application, do not hesitate to contact the responsible TA at [pedrofigueiredo@tamu.edu](pedrofigueiredo@tamu.edu), or attend his office hours.
-<<<<<<< HEAD
-=======
-# project-example-python
-Repository holding the source code of the example Python project for CSCE 310, Summer 2022.
->>>>>>> Initial commit
-=======
->>>>>>> Python Application Upload
+If you have any issues executing this application, please do not hesitate to contact the development team members, Josh Yang (Yingte.Yang@tamu.edu), Priyanka Rao (pbr27@tamu.edu), Alex Torres (robincrass@tamu.edu), Elvis Hedary(elvis@tamu.edu),  Or Sami Amin (samiamin@tamu.edu).
