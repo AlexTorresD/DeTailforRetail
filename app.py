@@ -190,6 +190,9 @@ def employeecreate():
         if(Employee_ID == '' or Employee_Fname == '' or Employee_Lname == '' or Employee_Email == '' or Employee_Phone == '' or Position == '' or Hours_Worked == '' or Position == ''):
             return createemployee(feedback_message='You cannot have empty attributes. Please try again.', feedback_type=False)
         db.session.commit()
+    except exc.IntegrityError as err:
+        db.session.rollback()
+        return createemployee(feedback_message='A duplicate attribute exists where it should not. Please try again.', feedback_type=False)
     except Exception as err:
         db.session.rollback()
         return createemployee(feedback_message='Database error: {}'.format(err), feedback_type=False)
