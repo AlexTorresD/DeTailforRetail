@@ -1,0 +1,41 @@
+{% extends "layouts/formlayout.html" %}
+
+{% block title_form %}
+<h2>Update Product</h2>
+{% endblock %}
+
+{% block body_form %}
+<form action="{{ url_for('productupdate')}}" method="post">
+  <label for="productnames">Select a product to update</label>
+  <select name="productnames">
+    {% for name in productnames %}
+      <option value="{{ name }}">{{ name }}</option>
+    {% endfor %} 
+  </select>
+    <h5>Enter the updated product details</h5>
+    <div>
+      <input type="text" name="Product_ID" placeholder="Product_ID">
+    </div>
+    <div>
+        <input type="text" name="Manufacturer_ID" placeholder="Manufacturer_ID">
+    </div>
+    <div>
+        <input type="text" name="Product_Price" placeholder="Product_Price">
+    </div>
+    <div>
+        <input type="text" name="Product_Quantity" placeholder="Product_Quantity">
+    </div>
+    <div>
+        <input type="text" name="Product_Size" placeholder="Product_Size">
+    </div>
+    <div>
+        <input type="text" name="Product_Type" placeholder="Product_Type">
+    </div>
+    <div>
+      <input type="text" name="Product_Description" placeholder="Product_Description">
+    </div>
+      <button >Update</button>
+    </div>
+</form>
+
+{% endblock %}

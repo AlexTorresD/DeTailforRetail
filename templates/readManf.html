@@ -1,0 +1,30 @@
+{% extends "layouts/tablelayout.html" %}
+
+{% block title_table %}
+<h2>Read Manufactuerers</h2> 
+{% endblock %}
+
+{% block body_table %}
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Headquarters</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Description</th>
+
+    </tr>
+    {% for ID, Name, Headquarters, Email, Phone, Description in manflist %}
+    <tr>
+        <td>{{ ID }}</td>
+        <td>{{ Name }}</td>
+        <td>{{ Headquarters }}</td>
+        <td>{{ Email }}</td>
+        <td>{{ Phone }}</td>
+        <td>{{ Description }}</td>
+    </tr>
+    {% endfor %}    
+</table>
+
+{% endblock %}

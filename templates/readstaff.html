@@ -1,0 +1,23 @@
+{% extends "layouts/tablelayout.html" %}
+
+{% block title_table %}
+<h2>Read Staff</h2> 
+{% endblock %}
+
+{% block body_table %}
+<table>
+  <tr>
+      <th>Staff_ID</th>
+      <th>Store_ID</th>
+      <th>Employee_ID</th>
+
+  </tr>
+  {% for Staff_ID, Store_ID, Employee_ID in staff_list %}
+  <tr>
+      <td>{{ Staff_ID }}</td>
+      <td>{{ Store_ID }}</td>
+      <td>{{ Employee_ID }}</td>
+  </tr>
+  {% endfor %}    
+</table>
+{% endblock %}
