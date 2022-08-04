@@ -25,7 +25,7 @@ class Employee(db.Model):
     Employee_ID = db.Column(db.Integer, primary_key=True)
     Employee_Fname = db.Column(db.String(64), nullable=False)
     Employee_Lname = db.Column(db.String(64), nullable=False)
-    Employee_Email = db.Column(db.String(128), nullable=False)
+    Employee_Email = db.Column(db.String(128), nullable=False, unique=True)
     Employee_Phone = db.Column(db.String(128), unique=True)
     Position = db.Column(db.String(128), nullable=False)
     Hours_Worked = db.Column(db.Integer, nullable=False)
@@ -154,8 +154,6 @@ def manfcreate():
                              Manufacturer_Description = desc)
         db.session.add(entry)
         db.session.commit()
-
-
     except exc.IntegrityError as err:
         db.session.rollback()
         return createmanf(feedback_message='A Manufacturer named {} already exists. Create a Manufacturer with a different name.'.format(name), feedback_type=False)
@@ -188,11 +186,14 @@ def employeecreate():
             Hours_Worked=Hours_Worked, Salary=Salary)
         db.session.add(entry)
         if(Employee_ID == '' or Employee_Fname == '' or Employee_Lname == '' or Employee_Email == '' or Employee_Phone == '' or Position == '' or Hours_Worked == '' or Position == ''):
-            return createemployee(feedback_message='You cannot have empty attributes. Please try again.', feedback_type=False)
+            return createemployee(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
         db.session.commit()
+    except ValueError as err:
+        db.session.rollback()
+        return createemployee(feedback_message='Attributes contained one or more invalid data types. Please try again', feedback_type=False)
     except exc.IntegrityError as err:
         db.session.rollback()
-        return createemployee(feedback_message='A duplicate attribute existed where it should not. Please try again.', feedback_type=False)
+        return createemployee(feedback_message='You cannot have a duplicate email or phone number. Please try again.', feedback_type=False)
     except Exception as err:
         db.session.rollback()
         return createemployee(feedback_message='Database error: {}'.format(err), feedback_type=False)
