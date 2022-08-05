@@ -5,11 +5,12 @@ from flask import Flask, render_template, request, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import select
 from sqlalchemy import exc
+from sqlalchemy import update
 import psycopg2
 
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://<user>:<password>@localhost/<appname>'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:password@localhost/DeTail'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://e-home:hihime45@localhost/csce310-app'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = 'secret string'
 
@@ -26,7 +27,7 @@ class Employee(db.Model):
     Employee_Fname = db.Column(db.String(64))
     Employee_Lname = db.Column(db.String(64))
     Employee_Email = db.Column(db.String(128))
-    Employee_Phone = db.Column(db.String(128))
+    Employee_Phone = db.Column(db.String(128), unique=True)
     Position = db.Column(db.String(128))
     Hours_Worked = db.Column(db.Integer)
     Salary = db.Column(db.Float)
@@ -78,7 +79,7 @@ def getManf():
     for manf in result.scalars():
         manf_list.append((manf.Manufacturer_Name, manf.Manufacturer_Email,
                           manf.Manufacturer_Phone, manf.Manufacturer_Headquarters, manf.Manufacturer_Description))
-    return manf_list;
+    return manf_list
 
 def getemployees():
     query = select(Employee)
@@ -171,6 +172,12 @@ def createemployee(feedback_message=None, feedback_type=False):
             feedback_message=feedback_message, 
             feedback_type=feedback_type)
 
+#create trigger function, whhen we insert on Orders table we will update product quantity in product table
+def update_product_quantity(product_id, order_quantity):
+    query = update(Product).where(Product.Product_ID == product_id).values(Product_Quantity = Product.Product_Quantity - order_quantity)
+    db.session.execute(query)
+    db.session.commit()
+
 @app.route("/employeecreate", methods=['POST'])
 def employeecreate():
     Employee_ID = request.form["Employee_ID"]
@@ -181,18 +188,48 @@ def employeecreate():
     Position = request.form["Position"]
     Hours_Worked = request.form["Hours_Worked"]
     Salary = request.form["Salary"]
+
+
     try:
         entry = Employee(Employee_ID=Employee_ID, Employee_Fname=Employee_Fname, Employee_Lname=Employee_Lname, 
-            Employee_Email=Employee_Email, Employee_Phone=Employee_Phone, Position=Position, 
+            Employee_Email=Employee_Email,Employee_Phone=Employee_Phone, Position=Position, 
             Hours_Worked=Hours_Worked, Salary=Salary)
         db.session.add(entry)
         db.session.commit()
     except exc.IntegrityError as err:
+        print('testingggggg')
         db.session.rollback()
-        return createemployee(feedback_message='An employee with name {} {} already exists. Create an employee with a different name.'.format(Employee_Fname, Employee_Lname), feedback_type=False)
+        #if phone number is already in the database, return error message
+        return createemployee(feedback_message='An Employee with the ID {} already exists. Create an Employee with a different ID.'.format(Employee_ID), feedback_type=False)
+        # if err.orig.diag.constraint_name == 'employee_id_key':
+        #     print('Employee ID already exists')
+        #     return createemployee(feedback_message='An Employee with ID {} already exists. Create an Employee with a different ID.'.format(Employee_ID), feedback_type=False)
+        # if err.orig.diag.constraint_name == 'employee_email_key':
+        #     print('Employee Email already exists')
+        #     return createemployee(feedback_message='An Employee with email {} already exists. Create an Employee with a different email.'.format(Employee_Email), feedback_type=False)
+        # if err.orig.diag.constraint_name == 'employee_phone_key':
+        #     print('Employee Phone already exists')
+        #     return createemployee(feedback_message='An Employee with phone {} already exists. Create an Employee with a different phone.'.format(Employee_Phone), feedback_type=False)
     except Exception as err:
         db.session.rollback()
         return createemployee(feedback_message='Database error: {} '.format(err), feedback_type=False)
+
+    # try:
+    #     entry2 = Employee(Employee_ID=Employee_ID, Employee_Fname=Employee_Fname, Employee_Lname=Employee_Lname, 
+    #         Employee_Email=Employee_Email, Employee_Phone=Employee_Phone, Position=Position, 
+    #         Hours_Worked=Hours_Worked, Salary=Salary)
+        
+    #     db.session.delete(entry)
+    #     db.session.add(entry2)
+    #     db.session.commit()
+    # except exc.IntegrityError as err:
+    #     db.session.rollback()
+    #     return createemployee(feedback_message='An employee with phone {} {} already exists. Create an employee with a different phone.'.format(Employee_Phone), feedback_type=False)
+    # except Exception as err:
+    #     db.session.rollback()
+    #     return createemployee(feedback_message='Database error: {} '.format(err), feedback_type=False)
+
+            
     return createemployee(feedback_message='Successfully added employee {} {} '.format(Employee_Fname, Employee_Lname),
                        feedback_type=True)
 
@@ -259,7 +296,10 @@ def productcreate():
     except Exception as err:
         db.session.rollback()
         return createproduct(feedback_message='Database error: {}'.format(err), feedback_type=False)
-            
+    
+    #update_product_quantity(product_id, order_quantity):
+    #use update_product_quantity to update the quantity of a product in the database
+
 
     return createproduct(feedback_message='Successfully added product {}'.format(Product_ID),
                        feedback_type=True)
@@ -269,6 +309,7 @@ def createorder(feedback_message=None, feedback_type=False):
     return render_template("createorder.html",
             feedback_message=feedback_message, 
             feedback_type=feedback_type)
+
 
 @app.route("/ordercreate", methods=['POST'])
 def ordercreate():
@@ -284,13 +325,28 @@ def ordercreate():
         entry = Orders(Order_ID=Order_ID, Store_ID=Store_ID, Product_ID=Product_ID, Order_Quantity=Order_Quantity, Order_Price=Order_Price, Order_Date=Order_Date, Received= Received.lower() in ['true', '1', 't', 'y', 'yes', 'yeah', 'yup', 'certainly', 'uh-huh'])
         db.session.add(entry)
         db.session.commit()
+    #error for duplicate phone number
+    
     except exc.IntegrityError as err:
         db.session.rollback()
         return createorder(feedback_message='A order with ID {} already exists. Create a order with a different name.'.format(Order_ID), feedback_type=False)
     except Exception as err:
         db.session.rollback()
         return createorder(feedback_message='Database error: {}'.format(err), feedback_type=False)
-            
+    
+    # def update_product_quantity(product_id, order_quantity):
+    # query = update(Product).where(Product.Product_ID == product_id).values(Product_Quantity = Product.Product_Quantity - order_quantity)
+    # db.session.execute(query)
+    # db.session.commit()
+
+    product_quan = Product.query.filter_by(Product_ID=Product_ID).first()
+    #convert to int
+    int_prod = product_quan.Product_Quantity = product_quan.Product_Quantity - int(Order_Quantity)
+    if (int_prod < 0):
+        db.session.rollback()
+        return createorder(feedback_message='Order quantity cannot be negative.', feedback_type=False)
+
+    update_product_quantity(Product_ID, Order_Quantity)
 
     return createorder(feedback_message='Successfully added order {}'.format(Order_ID),
                        feedback_type=True)
@@ -807,3 +863,5 @@ def manfdelete():
 @app.route('/')
 def home():
     return render_template('home.html')
+
+
