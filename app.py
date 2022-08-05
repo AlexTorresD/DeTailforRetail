@@ -10,16 +10,16 @@ import psycopg2
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://<user>:<password>@localhost/<appname>'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:samiamin@localhost/csce310-app'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:password@localhost/DeTail'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = 'secret string'
-
 db = SQLAlchemy(app)
-
 class Store(db.Model):  
     Store_ID = db.Column(db.Integer, primary_key=True)
     Store_Name = db.Column(db.String(128))
     Location = db.Column(db.String(128))
     Order_Relation = db.relationship('Orders', backref='store', lazy=True,passive_deletes = True)
+    Order_Relation = db.relationship('Orders', backref='store', lazy=True)
 
 class Employee(db.Model):
     Employee_ID = db.Column(db.Integer, primary_key=True)
@@ -39,6 +39,8 @@ class Manufacturer(db.Model):
     Manufacturer_Headquarters = db.Column(db.String(128))
     Manufacturer_Description = db.Column(db.String(128))
     Product_Relation = db.relationship('Product', backref='manufacturer', lazy=True,passive_deletes = True)
+    Product_Relation = db.relationship('Product', backref='manufacturer', lazy=True)
+
 
 class Product(db.Model):
     Product_ID = db.Column(db.Integer, primary_key=True)
@@ -49,6 +51,7 @@ class Product(db.Model):
     Product_Type = db.Column(db.String(128))
     Product_Description = db.Column(db.String(128))
     Orders_Relation = db.relationship('Orders', backref='product', lazy=True,passive_deletes = True)
+    Orders_Relation = db.relationship('Orders', backref='product', lazy=True)
     
 class Orders(db.Model):
     Order_ID = db.Column(db.Integer, primary_key=True)
@@ -64,6 +67,9 @@ class Staff(db.Model):
     Store_ID = db.Column(db.Integer, db.ForeignKey('store.Store_ID',ondelete = 'CASCADE'))
     Employee_ID = db.Column(db.Integer, db.ForeignKey('employee.Employee_ID',ondelete = 'CASCADE'))
     Employee_Relation = db.relationship('Employee', backref='staff', lazy=True,passive_deletes = True)
+    Store_ID = db.Column(db.Integer, db.ForeignKey('store.Store_ID'))
+    Employee_ID = db.Column(db.Integer, db.ForeignKey('employee.Employee_ID'))
+    Employee_Relation = db.relationship('Employee', backref='staff', lazy=True)
 
     
 
