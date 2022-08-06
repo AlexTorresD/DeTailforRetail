@@ -153,6 +153,8 @@ def manfcreate():
                              Manufacturer_Headquarters = headquarters, 
                              Manufacturer_Description = desc)
         db.session.add(entry)
+        if(id == '' or name == '' or email == '' or phone == '' or headquarters == '' or desc == ''):
+            return createemployee(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
         db.session.commit()
     except exc.IntegrityError as err:
         db.session.rollback()
@@ -223,6 +225,7 @@ def storecreate(): #DONE BY ELVIS
 def createstaff(feedback_message=None, feedback_type=False): #DONE BY ELVIS
     return render_template("createstaff.html", feedback_message=feedback_message, feedback_type=feedback_type)
 
+
 @app.route("/staffcreate", methods=['POST'])
 def staffcreate(): #DONE BY ELVIS
     Staff_ID = request.form.get("Staff_ID"); Store_ID = request.form.get("Store_ID"); Employee_ID = request.form.get("Employee_ID")
@@ -256,6 +259,9 @@ def productcreate():
     try:
         entry = Product(Product_ID = Product_ID, Manufacturer_ID = Manufacturer_ID, Product_Price=Product_Price, Product_Quantity=Product_Quantity, Product_Size=Product_Size, Product_Type=Product_Type, Product_Description=Product_Description)
         db.session.add(entry)
+        if(Product_ID == '' or Manufacturer_ID == '' or Product_Price == '' or Product_Quantity == '' or Product_Size == '' or Product_Type == '' or Product_Description == ''):
+            return createemployee(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
+        db.session.commit()
         db.session.commit()
     except exc.IntegrityError as err:
         db.session.rollback()
@@ -463,6 +469,7 @@ def orderupdate():
 
     return updateorder(feedback_message='Successfully updated order {}'.format(Order_ID),
                        feedback_type=True)
+
 @app.route("/updateemployee")
 def updateemployee(feedback_message=None, feedback_type=False):
     employee_IDs = [name for name, _, _, _, _, _, _, _ in getemployees()]
@@ -486,10 +493,17 @@ def employeeupdate():
     try:
         obj = db.session.query(Employee).filter(
             Employee.Employee_ID==e_ID).first()
-        
         if obj == None:
             msg = 'Employee {} not found.'.format(e_ID)
             return updateemployee(feedback_message=msg, feedback_type=False)
+
+        if Employee_Email in [name for _, _, _, name, _, _, _, _ in getemployees()]:
+            msg = 'The email you entered already exists for another employee. Please try again'
+            return updateemployee(feedback_message=msg, feedback_type=False)
+        if Employee_Phone in [name for _, _, _, _, name, _, _, _ in getemployees()]:
+            msg = 'The phone number you entered already exists for another employee. Please try again'
+            return updateemployee(feedback_message=msg, feedback_type=False)
+            
         if Employee_ID != '':
             obj.Employee_ID = Employee_ID
         else:
@@ -542,7 +556,14 @@ def manfupdate():
         if obj == None:
             msg = 'Manufacturer {} not found.'.format(manf_name)
             return updatemanf(feedback_message=msg, feedback_type=False)
-        
+
+        if email in [name for _, _, name, _, _ in getManf()]:
+            msg = 'The email you entered already exists for another manufacturer. Please try again'
+            return updatemanf(feedback_message=msg, feedback_type=False)
+        if phone in [name for _, _, _, name, _ in getManf()]:
+            msg = 'The phone number you entered already exists for another manufacturer. Please try again'
+            return updateemployee(feedback_message=msg, feedback_type=False)
+
         ##may need to capitalize here
         if name != '':
             obj.Manufacturer_Name = name
