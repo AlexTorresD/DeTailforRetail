@@ -1,7 +1,8 @@
+from itertools import product
 from modulefinder import STORE_NAME
 from multiprocessing import synchronize
 from turtle import position
-from flask import Flask, render_template, request, flash
+from flask import Flask, redirect, render_template, request, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import select
 from sqlalchemy import exc
@@ -129,6 +130,14 @@ def getorders():
     for order in result.scalars():
         order_list.append((order.Order_ID, order.Store_ID, order.Product_ID, order.Order_Quantity, order.Order_Price, order.Order_Date, order.Received))
     return order_list
+
+def getemployee_byID(id):
+    query = select(Employee).where(Employee.Employee_ID == id)
+    result = db.session.execute(query)
+    employee = result.scalars()
+    if employee is None:
+        raise('Employee no found')
+    return employee
 
 #CREATE
 
@@ -410,6 +419,46 @@ def productupdate():
     return updateproduct(feedback_message='Successfully updated product {}'.format(Product_ID),
                        feedback_type=True)
 
+@app.route("/updateproductid/<int:id>", methods=['GET','POST'])
+def updateproductid(id):
+    try:
+        obj = db.session.query(Product).filter(
+            Product.Product_ID == id).first()
+        
+        Product_ID = request.form["Product_ID"]
+        Manufacturer_ID = request.form["Manufacturer_ID"]
+        Product_Price = request.form["Product_Price"]
+        Product_Quantity = request.form["Product_Quantity"]
+        Product_Size = request.form["Product_Size"]
+        Product_Type = request.form["Product_Type"]
+        Product_Description = request.form["Product_Description"]
+
+
+        if obj == None:
+            msg = 'product {} not found.'.format(id)
+            return render_template("updateproductid.html", product = obj, feedback_message=msg, feedback_type=False)
+        if Product_ID != '':
+            obj.Product_ID = Product_ID
+        if Manufacturer_ID != '':
+            obj.Manufacturer_ID = Manufacturer_ID
+        if Product_Price != '':
+            obj.Product_Price = Product_Price
+        if Product_Quantity != '':
+            obj.Product_Quantity = Product_Quantity
+        if Product_Size != '':
+            obj.Product_Size = Product_Size
+        if Product_Type != '':
+            obj.Product_Type = Product_Type
+        if Product_Description != '':
+            obj.Product_Description = Product_Description
+            
+        db.session.commit()
+        return redirect('/readproduct')
+
+    except Exception as err:
+        db.session.rollback()
+        return render_template("updateproductid.html", product = obj, feedback_message=err, feedback_type=False)
+    
 @app.route("/updateorder")
 def updateorder(feedback_message=None, feedback_type=False):
     order_names = [name for name, _, _, _, _, _, _ in getorders()]
@@ -459,6 +508,45 @@ def orderupdate():
 
     return updateorder(feedback_message='Successfully updated order {}'.format(Order_ID),
                        feedback_type=True)
+
+@app.route("/updateorderid/<int:id>", methods=['GET','POST'])
+def updateorderid(id):
+    try:
+        obj = db.session.query(Orders).filter(
+            Orders.Order_ID == id).first()
+
+        Order_ID = request.form["Order_ID"]
+        Store_ID = request.form["Store_ID"]
+        Product_ID = request.form["Product_ID"]
+        Order_Quantity = request.form["Order_Quanity"]
+        Order_Price = request.form["Order_Price"]
+        Order_Date = request.form["Order_Date"]
+        Received = request.form["Received"]
+
+        if obj == None:
+            msg = 'Order {} not found.'.format(Order_ID)
+            return render_template("updateorderid.html", order = obj,feedback_message=msg, feedback_type=False)
+        if Order_ID != '':
+            obj.Order_ID = Order_ID
+        if Store_ID != '':
+            obj.Store_ID = Store_ID
+        if Product_ID != '':
+            obj.Product_ID = Product_ID
+        if Order_Quantity != '':
+            obj.Order_Quantity = Order_Quantity
+        if Order_Price != '':
+            obj.Order_Price = Order_Price
+        if Order_Date != '':
+            obj.Order_Date = Order_Date
+        if Received != '':
+            obj.Received = Received.lower() in ['true', '1', 't', 'y', 'yes', 'yeah', 'yup', 'certainly', 'uh-huh']
+
+        db.session.commit()
+        return redirect('/readorder')
+    except Exception as err:
+        db.session.rollback()
+        return render_template("updateorderid.html", order = obj,feedback_message=err, feedback_type=False)
+
 @app.route("/updateemployee")
 def updateemployee(feedback_message=None, feedback_type=False):
     employee_IDs = [name for name, _, _, _, _, _, _, _ in getemployees()]
@@ -513,6 +601,50 @@ def employeeupdate():
     return updateemployee(feedback_message='Successfully updated employee with ID {}'.format(e_ID),
                        feedback_type=True)
 
+@app.route("/updateemployeeid/<int:id>",methods=['GET','POST'])
+def updateemployeeid(id):
+
+    try:
+        obj = Employee.query.filter_by(Employee_ID=id).first()
+
+        Employee_ID = request.form["Employee_ID"]
+        Employee_Fname = request.form["Employee_Fname"]
+        Employee_Lname = request.form["Employee_Lname"]
+        Employee_Email = request.form["Employee_Email"]
+        Employee_Phone = request.form["Employee_Phone"]
+        Position = request.form["Position"]
+        Hours_Worked = request.form["Hours_Worked"]
+        Salary = request.form["Salary"]
+
+        if obj == None:
+            msg = 'Employee {} not found.'.format(id)
+            return render_template('updateemployeeid.html', employee = obj, feedback_message=msg, feedback_type=False)
+        if Employee_ID != '':
+            obj.Employee_ID = Employee_ID
+        else:
+            obj.Employee_ID = id
+        if Employee_Fname != '':
+            obj.Employee_Fname = Employee_Fname
+        if Employee_Lname != '':
+            obj.Employee_Lname = Employee_Lname
+        if Employee_Email != '':
+            obj.Employee_Email = Employee_Email
+        if Employee_Phone != '':
+            obj.Employee_Phone = Employee_Phone
+        if Position != '':
+            obj.Position = Position
+        if Hours_Worked != '':
+            obj.Hours_Worked = Hours_Worked
+        if Salary != '':
+            obj.Salary = Salary
+
+        db.session.commit()
+        return redirect('/reademployee')
+    except Exception as err:
+        db.session.rollback()
+        return render_template('updateemployeeid.html', employee = obj, feedback=err)
+
+
 @app.route("/updatemanf") #####may needto fix this part
 def updatemanf(feedback_message=None, feedback_type=False):
     manf_names = [name for name, _, _, _, _ in getManf()]
@@ -559,6 +691,43 @@ def manfupdate():
 
     return updatemanf(feedback_message='Successfully updated chef {}'.format(manf_name),
                        feedback_type=True)
+
+@app.route("/updatemanfid/<int:id>", methods=['GET','POST'])
+def updatemanfid(id):
+    try:
+        obj = db.session.query(Manufacturer).filter(
+            Manufacturer.Manufacturer_ID == id).first()
+        
+        mid = request.form["id"]
+        name = request.form["name"]
+        hq = request.form["hq"]
+        email = request.form["email"]
+        phone= request.form["phone"]
+        desc = request.form["desc"]
+
+        if obj == None:
+            msg = 'Manufacturer {} not found.'.format(id)
+            return updatemanf(feedback_message=msg, feedback_type=False)
+        if mid != '':
+            obj.Manufacturer_ID = mid
+        if name != '':
+            obj.Manufacturer_Name = name
+        if hq != '':
+            obj.Manufacturer_Headquarters = hq
+        if email != '':
+            obj.Manufacturer_Email = email
+        if phone != '':
+            obj.Manufacturer_Phone = phone
+        if desc != '':
+            obj.Manufacturer_Description = desc
+            
+        db.session.commit()
+        return redirect('/readmanf')
+
+    except Exception as err:
+        db.session.rollback()
+        return render_template("updatemanfid.html", manf = obj, feedback_message=err, feedback_type=False)
+    
 #UPDATE STAFF
 @app.route("/updatestaff")
 def updatestaff(feedback_message=None, feedback_type=False): #DONE BY ELVIS
@@ -594,6 +763,33 @@ def staffupdate(): #DONE BY ELVIS
         return updatestaff(feedback_message='An error occurred. Please try again.', feedback_type=False)
     return updatestaff(feedback_message='Staff ' + Staff_ID + ' updated successfully.', feedback_type=True)
 
+@app.route("/updatestaffid/<int:id>", methods=['GET','POST'])
+def updatestaffid(id):
+    try:
+        obj = db.session.query(Staff).filter(
+            Staff.Staff_ID == id).first()
+
+        Staff_ID = request.form["Staff_ID"]; 
+        Store_ID = request.form["Store_ID"]; 
+        Employee_ID = request.form["Employee_ID"]
+
+        if obj == None:
+            return render_template("updatestaffid.html",feedback_message='Staff ' + Staff_ID + ' does not exist. Please try again.', feedback_type=False)
+        if Store_ID != '':
+            obj.Store_ID = Store_ID
+        else:
+            obj.Store_ID = id
+        if Employee_ID != '':
+            obj.Employee_ID = Employee_ID
+        if Staff_ID != '':
+            obj.Staff_ID = Staff_ID
+
+        db.session.commit()
+        return redirect('/readstaff')
+    except Exception as err:
+        db.session.rollback()
+        return render_template("updatestaffid.html", staff = obj,feedback_message=err, feedback_type=False)
+
 #UPDATE STORE
 @app.route("/updatestore")
 def updatestore(feedback_message=None, feedback_type=False): #DONE BY ELVIS
@@ -602,6 +798,7 @@ def updatestore(feedback_message=None, feedback_type=False): #DONE BY ELVIS
     storenames=store_names, 
     feedback_message=feedback_message, 
     feedback_type=feedback_type)
+
 @app.route("/storeupdate", methods=['POST'])
 def storeupdate(): #DONE BY ELVIS
     store_name = request.form.get('storenames')
@@ -626,6 +823,32 @@ def storeupdate(): #DONE BY ELVIS
         return updatestore(feedback_message='An error occurred. Please try again.', feedback_type=False)
     return updatestore(feedback_message='Staff ' + Store_ID + ' updated successfully.', feedback_type=True)
 
+@app.route("/updatestoreid/<int:id>", methods=['GET','POST'])
+def updatestoreid(id):
+    try:
+        obj = db.session.query(Store).filter(
+            Store.Store_ID == id).first()
+
+    
+        Store_ID = request.form["Store_ID"]
+        Store_Name = request.form["Store_Name"]
+        Location = request.form["Location"]
+
+        if obj == None:
+            msg = 'Store {} not found.'.format(id)
+            return render_template("updatestoreid.html", feedback_message=msg, feedback_type=False)
+        if Store_ID != '':
+            obj.Store_ID = Store_ID
+        if Store_Name != '':
+            obj.Store_Name = Store_Name
+        if Location != '':
+            obj.Location = Location
+
+        db.session.commit()
+        return redirect('/readstore')
+    except Exception as err:
+        db.session.rollback()
+        return render_template("updatestoreid.html", store = obj,feedback_message=None, feedback_type=False)
 #
 # DELETE
 #
@@ -637,7 +860,7 @@ def deletestaff(feedback_message=None, feedback_type=False): #DONE BY ELVIS
     staffnames=staff_names, 
     feedback_message=feedback_message, 
     feedback_type=feedback_type)
-@app.route("/staffdelete", methods=['POST']) #DONE BY ELVIS
+@app.route("/staffdelete", methods=['POST'])
 def staffdelete():
     if not request.form.get('confirmInput'):
         return deletestaff(feedback_message='Please confirm deletion.', feedback_type=False)
@@ -653,6 +876,22 @@ def staffdelete():
         db.session.rollback()
         return deletestaff(feedback_message='An error occurred. Please try again.', feedback_type=False)
     return deletestaff(feedback_message='Staff deleted successfully.', feedback_type=True)
+
+@app.route("/deletestaffid/<int:id>", methods=['GET','POST']) #DONE BY ELVIS
+def staffdeleteid(id):
+    if not request.form.get('confirmInput'):
+        return render_template("deletestaffid.html", feedback_message='Please confirm deletion.', feedback_type=False)
+    try:
+        obj = db.session.query(Staff).filter(
+            Staff.Staff_ID==id).first()
+        if obj == None:
+            return render_template("deletestaffid.html", feedback_message='Staff does not exist. Please try again.', feedback_type=False)
+        db.session.delete(obj)
+        db.session.commit()
+        return redirect('/readstaff')
+    except Exception as ERROR:
+        db.session.rollback()
+        return render_template("deletestaffid.html", feedback_message='An error occurred. Please try again.', feedback_type=False)
 
 @app.route("/deletestore")
 def deletestore(feedback_message=None, feedback_type=False): #DONE BY ELVIS
@@ -677,6 +916,22 @@ def storedelete():
         db.session.rollback()
         return deletestore(feedback_message='An error occurred. Please try again.', feedback_type=False)
     return deletestore(feedback_message='Store deleted successfully.', feedback_type=True)
+
+@app.route("/deletestoreid/<int:id>", methods=['GET','POST']) #DONE BY ELVIS
+def storedeleteid(id):
+    if not request.form.get('confirmInput'):
+        return render_template("deletestoreid.html", feedback_message='Please confirm deletion.', feedback_type=False)
+    try:
+        obj = db.session.query(Store).filter(
+            Store.Store_ID==id).first()
+        if obj == None:
+            return render_template("deletestoreid.html", feedback_message='Store does not exist. Please try again.', feedback_type=False)
+        db.session.delete(obj)
+        db.session.commit()
+        return redirect('/readstore')
+    except Exception as ERROR:
+        db.session.rollback()
+        return render_template("deletestoreid.html", feedback_message='An error occurred. Please try again.', feedback_type=False)
 
 @app.route("/deleteproduct")
 def deleteproduct(feedback_message=None, feedback_type=False):
@@ -710,6 +965,22 @@ def productdelete():
     return deleteproduct(feedback_message='Successfully deleted product {}'.format(product_name),
                        feedback_type=True)
 
+@app.route("/deleteproductid/<int:id>", methods=['GET','POST']) #DONE BY ELVIS
+def productdeleteid(id):
+    if not request.form.get('confirmInput'):
+        return render_template("deleteproductid.html", feedback_message='Please confirm deletion.', feedback_type=False)
+    try:
+        obj = db.session.query(Product).filter(
+            Product.Product_ID==id).first()
+        if obj == None:
+            return render_template("deleteproductid.html", feedback_message='Product does not exist. Please try again.', feedback_type=False)
+        db.session.delete(obj)
+        db.session.commit()
+        return redirect('/readproduct')
+    except Exception as ERROR:
+        db.session.rollback()
+        return render_template("deleteproductid.html", feedback_message='An error occurred. Please try again.', feedback_type=False)
+
 @app.route("/deleteorder")
 def deleteorder(feedback_message=None, feedback_type=False):
     order_names = [name for name, _, _, _, _, _, _ in getorders()]
@@ -741,6 +1012,22 @@ def orderdelete():
 
     return deleteorder(feedback_message='Successfully deleted order {}'.format(order_name),
                        feedback_type=True)
+
+@app.route("/deleteorderid/<int:id>", methods=['GET','POST']) #DONE BY ELVIS
+def orderdeleteid(id):
+    if not request.form.get('confirmInput'):
+        return render_template("deleteorderid.html", feedback_message='Please confirm deletion.', feedback_type=False)
+    try:
+        obj = db.session.query(Orders).filter(
+            Orders.Order_ID==id).first()
+        if obj == None:
+            return render_template("deleteorderid.html", feedback_message='Store does not exist. Please try again.', feedback_type=False)
+        db.session.delete(obj)
+        db.session.commit()
+        return redirect('/readorder')
+    except Exception as ERROR:
+        db.session.rollback()
+        return render_template("deleteorderid.html", feedback_message='An error occurred. Please try again.', feedback_type=False)
 
 @app.route("/deleteemployee")
 def deleteemployee(feedback_message=None, feedback_type=False):
@@ -774,6 +1061,22 @@ def employeedelete():
     return deleteemployee(feedback_message='Successfully deleted employee with {}'.format(employee_ID),
                        feedback_type=True)
 
+@app.route("/deleteemployeeid/<int:id>", methods=['GET','POST']) #DONE BY ELVIS
+def employeedeleteid(id):
+    if not request.form.get('confirmInput'):
+        return render_template("deleteemployeeid.html", feedback_message='Please confirm deletion.', feedback_type=False)
+    try:
+        obj = db.session.query(Employee).filter(
+            Employee.Employee_ID==id).first()
+        if obj == None:
+            return render_template("deleteemployeeid.html", feedback_message='Store does not exist. Please try again.', feedback_type=False)
+        db.session.delete(obj)
+        db.session.commit()
+        return redirect('/reademployee')
+    except Exception as ERROR:
+        db.session.rollback()
+        return render_template("deleteemployeeid.html", feedback_message='An error occurred. Please try again.', feedback_type=False)
+
 @app.route("/deletemanf")
 def deletemanf(feedback_message=None, feedback_type=False):
     manf_names = [name for name, _, _, _, _ in getManf()]
@@ -803,6 +1106,22 @@ def manfdelete():
     
     return deletemanf(feedback_message='Successfully deleted Manufacturer {}'.format(manf_name),
                       feedback_type=True)
+
+@app.route("/deletemanfid/<int:id>", methods=['GET','POST']) #DONE BY ELVIS
+def manfdeleteid(id):
+    if not request.form.get('confirmInput'):
+        return render_template("deletemanfid.html", feedback_message='Please confirm deletion.', feedback_type=False)
+    try:
+        obj = db.session.query(Manufacturer).filter(
+            Manufacturer.Manufacturer_Name == id).filter().first()
+        if obj == None:
+            return render_template("deletemanfid.html", feedback_message='Store does not exist. Please try again.', feedback_type=False)
+        db.session.delete(obj)
+        db.session.commit()
+        return redirect('/readorder')
+    except Exception as ERROR:
+        db.session.rollback()
+        return render_template("deletemanfid.html", feedback_message='An error occurred. Please try again.', feedback_type=False)
 
 @app.route('/')
 def home():

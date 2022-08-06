@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block body_form %}
-<form action="{{ url_for('employeeupdate')}}" method="post">
+<form action="{{url_for('updateemployeeid', variable=Employee_ID)}}" method="get,post">
   <label for="employeeIDs">Select an employee to update based on ID</label>
   <select name="employeeIDs">
     {% for name in employeeIDs %}
@@ -15,27 +15,27 @@
   <h5>Enter the updated employee details</h5>
   <div>
     <input type="text" name="Employee_ID" placeholder="ID">
-</div>
+  </div>
   <div>
       <input type="text" name="Employee_Fname" placeholder="First Name">
   </div>
   <div>
     <input type="text" name="Employee_Lname" placeholder="Last Name">
-</div>
-<div>
-  <input type="text" name="Employee_Email" placeholder="Email">
-</div>
-<div>
-<input type="text" name="Employee_Phone" placeholder="Phone">
-</div>
-<div>
-<input type="text" name="Position" placeholder="Position">
-</div>
-<div>
-<input type="text" name="Hours_Worked" placeholder="Hours Worked">
-</div>
-<div>
-  <input type="text" name="Salary" placeholder="Salary">
+  </div>
+  <div>
+    <input type="text" name="Employee_Email" placeholder="Email">
+  </div>
+  <div>
+    <input type="text" name="Employee_Phone" placeholder="Phone">
+  </div>
+  <div>
+    <input type="text" name="Position" placeholder="Position">
+  </div>
+  <div>
+    <input type="text" name="Hours_Worked" placeholder="Hours Worked">
+  </div>
+  <div>
+    <input type="text" name="Salary" placeholder="Salary">
   </div>
   <div>
       <button >Update</button>

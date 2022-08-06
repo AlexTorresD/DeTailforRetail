@@ -1,0 +1,37 @@
+{% extends "layouts/formlayout.html" %}
+
+{% block title_form %}
+<h2>Update Order</h2>
+{% endblock %}
+
+{% block body_form %}
+<div class="container" >
+<form action="" id="formSubmission" method="POST">
+    <label>Select a order to update</label>
+    <h5>Enter the updated order details</h5>
+    <div>
+        <input type="text" name="Order_ID" placeholder="name" value="{{order.Order_ID}}">
+    </div>
+    <div>
+        <input type="text" name="Store_ID" placeholder="Store_ID" value="{{order.Store_ID}}">
+    </div>
+    <div>
+        <input type="text" name="Product_ID" placeholder="Product_ID" value="{{order.Product_ID}}">
+    </div>
+    <div>
+        <input type="text" name="Order_Quanity" placeholder="Quanity" value="{{order.Order_Quanity}}">
+    </div>
+    <div>
+        <input type="text" name="Order_Price" placeholder="Price" value="{{order.Order_Price}}">
+    </div>
+    <div>
+        <input type="text" name="Order_Date" placeholder="Date" value="{{order.Order_Date}}">
+    </div>
+    <div>
+        <input type="text" name="Received" placeholder="Received" value="{{order.Received}}">
+    </div>
+    <button >Update</button>
+    </div>
+</form>
+
+{% endblock %}

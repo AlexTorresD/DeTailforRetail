@@ -1,0 +1,42 @@
+{% extends "layouts/formlayout.html" %}
+
+{% block title_form %}
+<h2>Update Manufacturer</h2>
+{% endblock %}
+
+{% block body_form %}
+<div class="container" >
+  <form action="" id="formSubmission" method="POST">
+  <h5>Enter the updated Manufacturer details</h5>
+
+  <div>
+    <input type="text" name="id" placeholder="id" value="{{manf.Manufacturer_ID}}">
+  </div>
+
+  <div>
+    <input type="text" name="name" placeholder="name" value="{{manf.Manufacturer_Name}}">
+  </div>
+
+  <div>
+    <input type="text" name="hq" placeholder="headquarters" value="{{manf.Manufacturer_Headquarters}}">
+  </div>
+
+  <div>
+    <input type="text" name="email" placeholder="email" value="{{manf.Manufacturer_Email}}">
+  </div>
+
+  <div>
+    <input type="text" name="phone" placeholder="phone" value="{{manf.Manufacturer_Phone}}">
+  </div>
+
+  <div>
+    <input type="text" name="desc" placeholder="description" value="{{manf.Manufacturer_Description}}">
+  </div>
+
+
+  <div>
+      <button >Update</button>
+  </div>
+</form>
+
+{% endblock %}

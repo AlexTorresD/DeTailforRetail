@@ -1,0 +1,25 @@
+{% extends "layouts/formlayout.html" %}
+
+{% block title_form %}
+<h2>Update Staff</h2>
+{% endblock %}
+
+{% block body_form %}
+<div class="container" >
+<form action="" id="formSubmission" method="POST">
+  <label>Select a Staff to update</label>
+    <h5>Enter the updated order details</h5>
+    <div>
+      <input type="text" name="Staff_ID" placeholder="name" value="{{staff.Staff_ID}}">
+    </div>
+    <div>
+        <input type="text" name="Store_ID" placeholder="Store_ID" value="{{staff.Store_ID}}">
+    </div>
+    <div>
+        <input type="text" name="Employee_ID" placeholder="Employee_ID" value="{{staff.Employee_ID}}">
+    </div>
+      <button >Update</button>
+    </div>
+</form>
+
+{% endblock %}

@@ -26,6 +26,8 @@
         <td align="center">{{ position }}</td>
         <td align="center">{{ hours_worked }}</td>
         <td align="center">{{ salary }}</td>
+        <td align="center"> <a href="/updateemployeeid/{{id}}"><button> Update Employee </button></a> </td>
+        <td align="center"> <a href="/deleteemployeeid/{{id}}"><button> Delete Employee </button></a> </td>
     </tr>
     {% endfor %}    
 </table>
