@@ -3,7 +3,7 @@ from multiprocessing import synchronize
 from turtle import position
 from flask import Flask, render_template, request, flash
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import select
+from sqlalchemy import Integer, select
 from sqlalchemy import exc
 import psycopg2
 
@@ -131,6 +131,30 @@ def getorders():
         order_list.append((order.Order_ID, order.Store_ID, order.Product_ID, order.Order_Quantity, order.Order_Price, order.Order_Date, order.Received))
     return order_list
 
+def isValidPhoneNumber(phoneNumber):
+    valid_ints = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+    if len(phoneNumber) == 12:
+        for i in range(12):
+            if i == 3 or i == 7:
+                if phoneNumber[i] != '-':
+                    return False
+            else:
+                if phoneNumber[i] not in valid_ints:
+                    return False
+    else:
+        return False
+    return True
+    
+def isValidEmail(email):
+    num_ats = 0
+    for i in range (len(email)):
+        if email[i] == '@':
+            num_ats = num_ats + 1
+    if num_ats != 1:
+        return False
+    else:
+        return True   
+
 #CREATE
 
 @app.route("/createmanf")
@@ -155,6 +179,10 @@ def manfcreate():
         db.session.add(entry)
         if id == '' or name == '' or email == '' or phone == '' or headquarters == '' or desc == '':
             return createmanf(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
+        if(isValidPhoneNumber(phone) == False):
+            return createmanf(feedback_message='The phone number you entered was invalid. Please try again.', feedback_type=False)
+        if(isValidEmail(email) == False):
+            return createmanf(feedback_message='The email you entered was invalid. Please try again.', feedback_type=False)
         db.session.commit()
     except exc.IntegrityError as err:
         db.session.rollback()
@@ -189,6 +217,10 @@ def employeecreate():
         db.session.add(entry)
         if Employee_ID == '' or Employee_Fname == '' or Employee_Lname == '' or Employee_Email == '' or Employee_Phone == '' or Position == '' or Hours_Worked == '' or Position == '':
             return createemployee(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
+        if isValidPhoneNumber(Employee_Phone) == False:
+            return createemployee(feedback_message='The phone number you entered was invalid. Please try again.', feedback_type=False)
+        if isValidEmail(Employee_Email) == False:
+            return createemployee(feedback_message='The email you entered was invalid. Please try again.', feedback_type=False)
         db.session.commit()
     except exc.IntegrityError as err:
         db.session.rollback()
