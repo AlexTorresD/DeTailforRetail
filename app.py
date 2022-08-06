@@ -189,7 +189,7 @@ def manfcreate():
         return createmanf(feedback_message='The manufacturer you entered had either a duplicate name, email, or phone number. Please try again', feedback_type=False)
     except Exception as err:
         db.session.rollback()
-        return createmanf(feedback_message='Database error: {}'.format(err), feedback_type=False)
+        return createmanf(feedback_message='One or more of the attributes entered was of an invalid data type. Please try again.', feedback_type=False)
     
     return createmanf(feedback_message='Successfully added Manufacturer {}'.format(name), ##### might need to change name
                        feedback_type=True)
@@ -224,10 +224,10 @@ def employeecreate():
         db.session.commit()
     except exc.IntegrityError as err:
         db.session.rollback()
-        return createemployee(feedback_message='You cannot have a duplicate email or phone number. Please try again.', feedback_type=False)
+        return createemployee(feedback_message='The employee you entered had a duplicate ID, email, or phone number. Please try again.', feedback_type=False)
     except Exception as err:
         db.session.rollback()
-        return createemployee(feedback_message='Database error: {}'.format(err), feedback_type=False)
+        return createemployee(feedback_message='One or more of the attributes entered was of an invalid data type. Please try again.', feedback_type=False)
     return createemployee(feedback_message='Successfully added employee {} {} '.format(Employee_Fname, Employee_Lname),
                        feedback_type=True)
 
@@ -430,7 +430,6 @@ def productupdate():
         if obj == None:
             msg = 'Product {} not found.'.format(Product_ID)
             return updateproduct(feedback_message=msg, feedback_type=False)
-
         if Product_ID != '':
             obj.Product_ID = Product_ID
         if Manufacturer_ID != '':
@@ -548,8 +547,15 @@ def employeeupdate():
             obj.Employee_Lname = Employee_Lname
         if Employee_Email != '':
             obj.Employee_Email = Employee_Email
+            if isValidEmail(Employee_Email) == False:
+                return updateemployee(feedback_message='The email you entered was invalid. Please try again.', feedback_type=False)
+            else:
+                obj.Employee_Phone = Employee_Phone
         if Employee_Phone != '':
-            obj.Employee_Phone = Employee_Phone
+            if isValidPhoneNumber(Employee_Phone) == False:
+                return updateemployee(feedback_message='The phone number you entered was invalid. Please try again.', feedback_type=False)
+            else:
+                obj.Employee_Phone = Employee_Phone
         if Position != '':
             obj.Position = Position
         if Hours_Worked != '':
@@ -560,6 +566,7 @@ def employeeupdate():
         db.session.commit()
     except Exception as err:
         db.session.rollback()
+        msg = 'One or more attributes of invalid data type was entered. Please try again.'
         return updateemployee(feedback_message=err, feedback_type=False)
 
     return updateemployee(feedback_message='Successfully updated employee with ID {}'.format(e_ID),
@@ -614,6 +621,7 @@ def manfupdate():
         
     except Exception as err:
         db.session.rollback()
+        msg = 'One or more attributes of invalid data type was entered. Please try again.'
         return updatemanf(feedback_message=err, feedback_type=False)
 
     return updatemanf(feedback_message='Successfully updated manufacturer {}'.format(manf_name),
