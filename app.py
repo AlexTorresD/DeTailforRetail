@@ -153,8 +153,8 @@ def manfcreate():
                              Manufacturer_Headquarters = headquarters, 
                              Manufacturer_Description = desc)
         db.session.add(entry)
-        if(id == '' or name == '' or email == '' or phone == '' or headquarters == '' or desc == ''):
-            return createemployee(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
+        if id == '' or name == '' or email == '' or phone == '' or headquarters == '' or desc == '':
+            return createmanf(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
         db.session.commit()
     except exc.IntegrityError as err:
         db.session.rollback()
@@ -187,7 +187,7 @@ def employeecreate():
             Employee_Email=Employee_Email, Employee_Phone=Employee_Phone, Position=Position, 
             Hours_Worked=Hours_Worked, Salary=Salary)
         db.session.add(entry)
-        if(Employee_ID == '' or Employee_Fname == '' or Employee_Lname == '' or Employee_Email == '' or Employee_Phone == '' or Position == '' or Hours_Worked == '' or Position == ''):
+        if Employee_ID == '' or Employee_Fname == '' or Employee_Lname == '' or Employee_Email == '' or Employee_Phone == '' or Position == '' or Hours_Worked == '' or Position == '':
             return createemployee(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
         db.session.commit()
     except ValueError as err:
@@ -211,6 +211,8 @@ def storecreate(): #DONE BY ELVIS
     Store_ID = request.form.get("Store_ID"); Store_Name = request.form.get("Store_Name"); Location = request.form.get("Location")
     try:
         entry = Store(Store_ID=Store_ID, Store_Name=Store_Name, Location=Location)
+        if Store_ID == '' or Store_Name == '' or Location == '':
+            return createstore(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
         db.session.add(entry); db.session.commit()
     except exc.IntegrityError as ERROR:
         db.session.rollback()
@@ -231,6 +233,8 @@ def staffcreate(): #DONE BY ELVIS
     Staff_ID = request.form.get("Staff_ID"); Store_ID = request.form.get("Store_ID"); Employee_ID = request.form.get("Employee_ID")
     try:
         entry = Staff(Staff_ID=Staff_ID, Store_ID=Store_ID, Employee_ID=Employee_ID)
+        if Staff_ID == '' or Store_ID == '' or Employee_ID == '':
+            return createstaff(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
         db.session.add(entry); db.session.commit()
     except exc.IntegrityError as ERROR:
         db.session.rollback()
@@ -259,9 +263,8 @@ def productcreate():
     try:
         entry = Product(Product_ID = Product_ID, Manufacturer_ID = Manufacturer_ID, Product_Price=Product_Price, Product_Quantity=Product_Quantity, Product_Size=Product_Size, Product_Type=Product_Type, Product_Description=Product_Description)
         db.session.add(entry)
-        if(Product_ID == '' or Manufacturer_ID == '' or Product_Price == '' or Product_Quantity == '' or Product_Size == '' or Product_Type == '' or Product_Description == ''):
-            return createemployee(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
-        db.session.commit()
+        if Product_ID == '' or Manufacturer_ID == '' or Product_Price == '' or Product_Quantity == '' or Product_Size == '' or Product_Type == '' or Product_Description == '':
+            return createproduct(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
         db.session.commit()
     except exc.IntegrityError as err:
         db.session.rollback()
@@ -293,6 +296,8 @@ def ordercreate():
     try:
         entry = Orders(Order_ID=Order_ID, Store_ID=Store_ID, Product_ID=Product_ID, Order_Quantity=Order_Quantity, Order_Price=Order_Price, Order_Date=Order_Date, Received= Received.lower() in ['true', '1', 't', 'y', 'yes', 'yeah', 'yup', 'certainly', 'uh-huh'])
         db.session.add(entry)
+        if Order_ID == '' or Store_ID == '' or Product_ID == '' or Order_Quantity == '' or Order_Price == '' or Order_Date == '' or Received == '':
+            return createorder(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
         db.session.commit()
     except exc.IntegrityError as err:
         db.session.rollback()
@@ -503,7 +508,7 @@ def employeeupdate():
         if Employee_Phone in [name for _, _, _, _, name, _, _, _ in getemployees()]:
             msg = 'The phone number you entered already exists for another employee. Please try again'
             return updateemployee(feedback_message=msg, feedback_type=False)
-            
+
         if Employee_ID != '':
             obj.Employee_ID = Employee_ID
         else:
