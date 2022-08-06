@@ -550,7 +550,7 @@ def employeeupdate():
             if isValidEmail(Employee_Email) == False:
                 return updateemployee(feedback_message='The email you entered was invalid. Please try again.', feedback_type=False)
             else:
-                obj.Employee_Phone = Employee_Phone
+                obj.Employee_Email = Employee_Email
         if Employee_Phone != '':
             if isValidPhoneNumber(Employee_Phone) == False:
                 return updateemployee(feedback_message='The phone number you entered was invalid. Please try again.', feedback_type=False)
@@ -611,9 +611,15 @@ def manfupdate():
         if hq != '':
             obj.Manufacturer_Headquarters = hq
         if email != '':
-            obj.Manufacturer_Email = email
+            if isValidEmail(email) == False:
+                return updatemanf(feedback_message='The email you entered was invalid. Please try again.', feedback_type=False)
+            else:
+                obj.Manufacturer_Email = email
         if phone != '':
-            obj.Manufacturer_Phone = phone
+            if isValidEmail(phone) == False:
+                return updatemanf(feedback_message='The phone number you entered was invalid. Please try again.', feedback_type=False)
+            else:
+                obj.Manufacturer_Phone = phone
         if desc != '':
             obj.Manufacturer_Description = desc
             
