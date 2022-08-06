@@ -567,7 +567,7 @@ def manfupdate():
             return updatemanf(feedback_message=msg, feedback_type=False)
         if phone in [name for _, _, _, name, _ in getManf()]:
             msg = 'The phone number you entered already exists for another manufacturer. Please try again'
-            return updateemployee(feedback_message=msg, feedback_type=False)
+            return updatemanf(feedback_message=msg, feedback_type=False)
 
         ##may need to capitalize here
         if name != '':
@@ -587,7 +587,7 @@ def manfupdate():
         db.session.rollback()
         return updatemanf(feedback_message=err, feedback_type=False)
 
-    return updatemanf(feedback_message='Successfully updated chef {}'.format(manf_name),
+    return updatemanf(feedback_message='Successfully updated manufacturer {}'.format(manf_name),
                        feedback_type=True)
 #UPDATE STAFF
 @app.route("/updatestaff")
