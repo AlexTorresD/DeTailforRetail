@@ -34,9 +34,9 @@ class Employee(db.Model):
 
 class Manufacturer(db.Model):
     Manufacturer_ID = db.Column(db.Integer, primary_key=True)
-    Manufacturer_Name = db.Column(db.String(128))
-    Manufacturer_Email = db.Column(db.String(128))
-    Manufacturer_Phone = db.Column(db.String(128))
+    Manufacturer_Name = db.Column(db.String(128), unique=True)
+    Manufacturer_Email = db.Column(db.String(128), unique=True)
+    Manufacturer_Phone = db.Column(db.String(128), unique=True)
     Manufacturer_Headquarters = db.Column(db.String(128))
     Manufacturer_Description = db.Column(db.String(128))
     Product_Relation = db.relationship('Product', backref='manufacturer', lazy=True)
@@ -158,7 +158,7 @@ def manfcreate():
         db.session.commit()
     except exc.IntegrityError as err:
         db.session.rollback()
-        return createmanf(feedback_message='A Manufacturer named {} already exists. Create a Manufacturer with a different name.'.format(name), feedback_type=False)
+        return createmanf(feedback_message='The manufacturer you entered had either a duplicate name, email, or phone number. Please try again', feedback_type=False)
     except Exception as err:
         db.session.rollback()
         return createmanf(feedback_message='Database error: {}'.format(err), feedback_type=False)
@@ -190,9 +190,6 @@ def employeecreate():
         if Employee_ID == '' or Employee_Fname == '' or Employee_Lname == '' or Employee_Email == '' or Employee_Phone == '' or Position == '' or Hours_Worked == '' or Position == '':
             return createemployee(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
         db.session.commit()
-    except ValueError as err:
-        db.session.rollback()
-        return createemployee(feedback_message='Attributes contained one or more invalid data types. Please try again', feedback_type=False)
     except exc.IntegrityError as err:
         db.session.rollback()
         return createemployee(feedback_message='You cannot have a duplicate email or phone number. Please try again.', feedback_type=False)
