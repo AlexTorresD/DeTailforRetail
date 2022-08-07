@@ -505,16 +505,15 @@ def orderupdate():
 
 @app.route("/updateemployee")
 def updateemployee(feedback_message=None, feedback_type=False):
-    employee_IDs = [name for name, _, _, _, _, _, _, _ in getemployees()]
+    employee_emails = [name for _, _, _, name, _, _, _, _ in getemployees()]
     return render_template("updateemployee.html", 
-                           employeeIDs = employee_IDs, 
+                           employeeEmails = employee_emails, 
                            feedback_message=feedback_message, 
                            feedback_type=feedback_type)
 
 @app.route("/employeeupdate", methods=['POST'])
 def employeeupdate():
-    e_ID = request.form.get('employeeIDs')
-    Employee_ID = request.form["Employee_ID"]
+    e_email = request.form.get('employeeEmails')
     Employee_Fname = request.form["Employee_Fname"]
     Employee_Lname = request.form["Employee_Lname"]
     Employee_Email = request.form["Employee_Email"]
@@ -525,9 +524,9 @@ def employeeupdate():
 
     try:
         obj = db.session.query(Employee).filter(
-            Employee.Employee_ID==e_ID).first()
+            Employee.Employee_Email==e_email).first()
         if obj == None:
-            msg = 'Employee {} not found.'.format(e_ID)
+            msg = 'Employee with email {} not found.'.format(e_email)
             return updateemployee(feedback_message=msg, feedback_type=False)
 
         if Employee_Email in [name for _, _, _, name, _, _, _, _ in getemployees()]:
@@ -537,10 +536,6 @@ def employeeupdate():
             msg = 'The phone number you entered already exists for another employee. Please try again'
             return updateemployee(feedback_message=msg, feedback_type=False)
 
-        if Employee_ID != '':
-            obj.Employee_ID = Employee_ID
-        else:
-            obj.Employee_ID = e_ID
         if Employee_Fname != '':
             obj.Employee_Fname = Employee_Fname
         if Employee_Lname != '':
