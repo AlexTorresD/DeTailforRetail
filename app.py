@@ -10,7 +10,7 @@ import psycopg2
 
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://<user>:<password>@localhost/<appname>'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:samiamin@localhost/csce310-app'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Xotillweod27*@localhost/csce310-app'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = 'secret string'
 db = SQLAlchemy(app)
@@ -133,6 +133,31 @@ def getorders():
         order_list.append((order.Order_ID, order.Store_ID, order.Product_ID, order.Order_Quantity, order.Order_Price, order.Order_Date, order.Received))
     return order_list
 
+def isValidPhoneNumber(phoneNumber):
+    valid_ints = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+    if len(phoneNumber) == 12:
+        for i in range(12):
+            if i == 3 or i == 7:
+                if phoneNumber[i] != '-':
+                    return False
+            else:
+                if phoneNumber[i] not in valid_ints:
+                    return False
+    else:
+        return False
+    return True
+    
+def isValidEmail(email):
+    num_ats = 0
+    for i in range (len(email)):
+        if email[i] == '@':
+            num_ats = num_ats + 1
+    if num_ats != 1:
+        return False
+    else:
+        return True   
+
+
 def getemployee_byID(id):
     query = select(Employee).where(Employee.Employee_ID == id)
     result = db.session.execute(query)
@@ -163,15 +188,19 @@ def manfcreate():
                              Manufacturer_Headquarters = headquarters, 
                              Manufacturer_Description = desc)
         db.session.add(entry)
+        if id == '' or name == '' or email == '' or phone == '' or headquarters == '' or desc == '':
+            return createmanf(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
+        if(isValidPhoneNumber(phone) == False):
+            return createmanf(feedback_message='The phone number you entered was not in the correct format. Please try again.', feedback_type=False)
+        if(isValidEmail(email) == False):
+            return createmanf(feedback_message='The email you entered was not in the correct format. Please try again.', feedback_type=False)
         db.session.commit()
-
-
     except exc.IntegrityError as err:
         db.session.rollback()
-        return createmanf(feedback_message='A Manufacturer named {} already exists. Create a Manufacturer with a different name.'.format(name), feedback_type=False)
+        return createmanf(feedback_message='The manufacturer you entered had either a duplicate name, email, or phone number. Please try again', feedback_type=False)
     except Exception as err:
         db.session.rollback()
-        return createmanf(feedback_message='Database error: {}'.format(err), feedback_type=False)
+        return createmanf(feedback_message='One or more of the attributes entered was of an invalid data type. Please try again.', feedback_type=False)
     
     return createmanf(feedback_message='Successfully added Manufacturer {}'.format(name), ##### might need to change name
                        feedback_type=True)
@@ -197,13 +226,19 @@ def employeecreate():
             Employee_Email=Employee_Email, Employee_Phone=Employee_Phone, Position=Position, 
             Hours_Worked=Hours_Worked, Salary=Salary)
         db.session.add(entry)
+        if Employee_ID == '' or Employee_Fname == '' or Employee_Lname == '' or Employee_Email == '' or Employee_Phone == '' or Position == '' or Hours_Worked == '' or Position == '':
+            return createemployee(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
+        if isValidPhoneNumber(Employee_Phone) == False:
+            return createemployee(feedback_message='The phone number you entered was not in the correct format. Please try again.', feedback_type=False)
+        if isValidEmail(Employee_Email) == False:
+            return createemployee(feedback_message='The email you entered was not in the correct format. Please try again.', feedback_type=False)
         db.session.commit()
     except exc.IntegrityError as err:
         db.session.rollback()
-        return createemployee(feedback_message='An employee with name {} {} already exists. Create an employee with a different name.'.format(Employee_Fname, Employee_Lname), feedback_type=False)
+        return createemployee(feedback_message='The employee you entered had a duplicate ID, email, or phone number. Please try again.', feedback_type=False)
     except Exception as err:
         db.session.rollback()
-        return createemployee(feedback_message='Database error: {} '.format(err), feedback_type=False)
+        return createemployee(feedback_message='One or more of the attributes entered was of an invalid data type. Please try again.', feedback_type=False)
     return createemployee(feedback_message='Successfully added employee {} {} '.format(Employee_Fname, Employee_Lname),
                        feedback_type=True)
 
@@ -216,6 +251,8 @@ def storecreate(): #DONE BY ELVIS
     Store_ID = request.form.get("Store_ID"); Store_Name = request.form.get("Store_Name"); Location = request.form.get("Location")
     try:
         entry = Store(Store_ID=Store_ID, Store_Name=Store_Name, Location=Location)
+        if Store_ID == '' or Store_Name == '' or Location == '':
+            return createstore(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
         db.session.add(entry); db.session.commit()
     except exc.IntegrityError as ERROR:
         db.session.rollback()
@@ -235,6 +272,8 @@ def staffcreate(): #DONE BY ELVIS
     Staff_ID = request.form.get("Staff_ID"); Store_ID = request.form.get("Store_ID"); Employee_ID = request.form.get("Employee_ID")
     try:
         entry = Staff(Staff_ID=Staff_ID, Store_ID=Store_ID, Employee_ID=Employee_ID)
+        if Staff_ID == '' or Store_ID == '' or Employee_ID == '':
+            return createstaff(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
         db.session.add(entry); db.session.commit()
     except exc.IntegrityError as ERROR:
         db.session.rollback()
@@ -243,6 +282,7 @@ def staffcreate(): #DONE BY ELVIS
         db.session.rollback()
         return createstaff(feedback_message='An error occurred. Please try again.', feedback_type=False)
     return createstaff(feedback_message='Staff ' + Staff_ID + ' created successfully.', feedback_type=True)
+
 
 @app.route("/createproduct")
 def createproduct(feedback_message=None, feedback_type=False):
@@ -263,6 +303,8 @@ def productcreate():
     try:
         entry = Product(Product_ID = Product_ID, Manufacturer_ID = Manufacturer_ID, Product_Price=Product_Price, Product_Quantity=Product_Quantity, Product_Size=Product_Size, Product_Type=Product_Type, Product_Description=Product_Description)
         db.session.add(entry)
+        if Product_ID == '' or Manufacturer_ID == '' or Product_Price == '' or Product_Quantity == '' or Product_Size == '' or Product_Type == '' or Product_Description == '':
+            return createproduct(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
         db.session.commit()
     except exc.IntegrityError as err:
         db.session.rollback()
@@ -294,6 +336,8 @@ def ordercreate():
     try:
         entry = Orders(Order_ID=Order_ID, Store_ID=Store_ID, Product_ID=Product_ID, Order_Quantity=Order_Quantity, Order_Price=Order_Price, Order_Date=Order_Date, Received= Received.lower() in ['true', '1', 't', 'y', 'yes', 'yeah', 'yup', 'certainly', 'uh-huh'])
         db.session.add(entry)
+        if Order_ID == '' or Store_ID == '' or Product_ID == '' or Order_Quantity == '' or Order_Price == '' or Order_Date == '' or Received == '':
+            return createorder(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
         db.session.commit()
     except exc.IntegrityError as err:
         db.session.rollback()
@@ -551,16 +595,15 @@ def updateorderid(id):
 
 @app.route("/updateemployee")
 def updateemployee(feedback_message=None, feedback_type=False):
-    employee_IDs = [name for name, _, _, _, _, _, _, _ in getemployees()]
+    employee_emails = [name for _, _, _, name, _, _, _, _ in getemployees()]
     return render_template("updateemployee.html", 
-                           employeeIDs = employee_IDs, 
+                           employeeEmails = employee_emails, 
                            feedback_message=feedback_message, 
                            feedback_type=feedback_type)
 
 @app.route("/employeeupdate", methods=['POST'])
 def employeeupdate():
-    e_ID = request.form.get('employeeIDs')
-    Employee_ID = request.form["Employee_ID"]
+    e_email = request.form.get('employeeEmails')
     Employee_Fname = request.form["Employee_Fname"]
     Employee_Lname = request.form["Employee_Lname"]
     Employee_Email = request.form["Employee_Email"]
@@ -571,23 +614,34 @@ def employeeupdate():
 
     try:
         obj = db.session.query(Employee).filter(
-            Employee.Employee_ID==e_ID).first()
-        
+            Employee.Employee_Email==e_email).first()
         if obj == None:
-            msg = 'Employee {} not found.'.format(e_ID)
+            msg = 'Employee with email {} not found.'.format(e_email)
             return updateemployee(feedback_message=msg, feedback_type=False)
-        if Employee_ID != '':
-            obj.Employee_ID = Employee_ID
-        else:
-            obj.Employee_ID = e_ID
+
+        if Employee_Email in [name for _, _, _, name, _, _, _, _ in getemployees()]:
+            msg = 'The email you entered already exists for another employee. Please try again'
+            return updateemployee(feedback_message=msg, feedback_type=False)
+        if Employee_Phone in [name for _, _, _, _, name, _, _, _ in getemployees()]:
+            msg = 'The phone number you entered already exists for another employee. Please try again'
+            return updateemployee(feedback_message=msg, feedback_type=False)
+
         if Employee_Fname != '':
             obj.Employee_Fname = Employee_Fname
         if Employee_Lname != '':
             obj.Employee_Lname = Employee_Lname
         if Employee_Email != '':
-            obj.Employee_Email = Employee_Email
+            if isValidEmail(Employee_Email) == False:
+                return updateemployee(feedback_message='The email you entered was not in the correct format. Please try again.', feedback_type=False)
+            else:
+                obj.Employee_Email = Employee_Email
+        else:
+            obj.Employee_Email = e_email
         if Employee_Phone != '':
-            obj.Employee_Phone = Employee_Phone
+            if isValidPhoneNumber(Employee_Phone) == False:
+                return updateemployee(feedback_message='The phone number you entered was not in the correct format. Please try again.', feedback_type=False)
+            else:
+                obj.Employee_Phone = Employee_Phone
         if Position != '':
             obj.Position = Position
         if Hours_Worked != '':
@@ -596,11 +650,12 @@ def employeeupdate():
             obj.Salary = Salary
         
         db.session.commit()
-    except Exception as err:
-        db.session.rollback()
-        return updateemployee(feedback_message=err, feedback_type=False)
 
-    return updateemployee(feedback_message='Successfully updated employee with ID {}'.format(e_ID),
+    except Exception as ERROR:
+        db.session.rollback()
+        return updateemployee(feedback_message='One or more attributes of invalid data type was entered. Please try again.', feedback_type=False)
+
+    return updateemployee(feedback_message='Successfully updated employee with email {}'.format(e_email),
                        feedback_type=True)
 
 @app.route("/updateemployeeid/<int:id>",methods=['GET','POST'])
@@ -665,6 +720,14 @@ def manfupdate():
     phone= request.form["phone"]
     desc = request.form["desc"]
     
+    manf_name = request.form.get('manfnames')
+    
+    name = request.form["name"]
+    hq = request.form["hq"]
+    email = request.form["email"]
+    phone= request.form["phone"]
+    desc = request.form["desc"]
+    
     try:
         obj = db.session.query(Manufacturer).filter(
             Manufacturer.Manufacturer_Name == manf_name).first()
@@ -672,28 +735,41 @@ def manfupdate():
         if obj == None:
             msg = 'Manufacturer {} not found.'.format(manf_name)
             return updatemanf(feedback_message=msg, feedback_type=False)
-        
+
+        if email in [name for _, _, name, _, _ in getManf()]:
+            msg = 'The email you entered already exists for another manufacturer. Please try again'
+            return updatemanf(feedback_message=msg, feedback_type=False)
+        if phone in [name for _, _, _, name, _ in getManf()]:
+            msg = 'The phone number you entered already exists for another manufacturer. Please try again'
+            return updatemanf(feedback_message=msg, feedback_type=False)
+
         ##may need to capitalize here
         if name != '':
             obj.Manufacturer_Name = name
         if hq != '':
             obj.Manufacturer_Headquarters = hq
         if email != '':
-            obj.Manufacturer_Email = email
+            if isValidEmail(email) == False:
+                return updatemanf(feedback_message='The email you entered was not in the correct format. Please try again.', feedback_type=False)
+            else:
+                obj.Manufacturer_Email = email
         if phone != '':
-            obj.Manufacturer_Phone = phone
+            if isValidEmail(phone) == False:
+                return updatemanf(feedback_message='The phone number you entered was not in the correct format. Please try again.', feedback_type=False)
+            else:
+                obj.Manufacturer_Phone = phone
         if desc != '':
             obj.Manufacturer_Description = desc
             
         db.session.commit()
         
-    except Exception as err:
+    except Exception as ERROR:
         db.session.rollback()
-        return updatemanf(feedback_message=err, feedback_type=False)
+        return updatemanf(feedback_message='One or more attributes of invalid data type was entered. Please try again.', feedback_type=False)
 
-    return updatemanf(feedback_message='Successfully updated chef {}'.format(manf_name),
+    return updatemanf(feedback_message='Successfully updated manufacturer {}'.format(manf_name),
                        feedback_type=True)
-
+                       
 @app.route("/updatemanfid/<int:id>", methods=['GET','POST'])
 def updatemanfid(id):
     try:
