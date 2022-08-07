@@ -180,9 +180,9 @@ def manfcreate():
         if id == '' or name == '' or email == '' or phone == '' or headquarters == '' or desc == '':
             return createmanf(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
         if(isValidPhoneNumber(phone) == False):
-            return createmanf(feedback_message='The phone number you entered was invalid. Please try again.', feedback_type=False)
+            return createmanf(feedback_message='The phone number you entered was not in the correct format. Please try again.', feedback_type=False)
         if(isValidEmail(email) == False):
-            return createmanf(feedback_message='The email you entered was invalid. Please try again.', feedback_type=False)
+            return createmanf(feedback_message='The email you entered was not in the correct format. Please try again.', feedback_type=False)
         db.session.commit()
     except exc.IntegrityError as err:
         db.session.rollback()
@@ -218,9 +218,9 @@ def employeecreate():
         if Employee_ID == '' or Employee_Fname == '' or Employee_Lname == '' or Employee_Email == '' or Employee_Phone == '' or Position == '' or Hours_Worked == '' or Position == '':
             return createemployee(feedback_message='You cannot have any empty attributes. Please try again.', feedback_type=False)
         if isValidPhoneNumber(Employee_Phone) == False:
-            return createemployee(feedback_message='The phone number you entered was invalid. Please try again.', feedback_type=False)
+            return createemployee(feedback_message='The phone number you entered was not in the correct format. Please try again.', feedback_type=False)
         if isValidEmail(Employee_Email) == False:
-            return createemployee(feedback_message='The email you entered was invalid. Please try again.', feedback_type=False)
+            return createemployee(feedback_message='The email you entered was not in the correct format. Please try again.', feedback_type=False)
         db.session.commit()
     except exc.IntegrityError as err:
         db.session.rollback()
@@ -541,14 +541,15 @@ def employeeupdate():
         if Employee_Lname != '':
             obj.Employee_Lname = Employee_Lname
         if Employee_Email != '':
-            obj.Employee_Email = Employee_Email
             if isValidEmail(Employee_Email) == False:
-                return updateemployee(feedback_message='The email you entered was invalid. Please try again.', feedback_type=False)
+                return updateemployee(feedback_message='The email you entered was not in the correct format. Please try again.', feedback_type=False)
             else:
                 obj.Employee_Email = Employee_Email
+        else:
+            obj.Employee_Email = e_email
         if Employee_Phone != '':
             if isValidPhoneNumber(Employee_Phone) == False:
-                return updateemployee(feedback_message='The phone number you entered was invalid. Please try again.', feedback_type=False)
+                return updateemployee(feedback_message='The phone number you entered was not in the correct format. Please try again.', feedback_type=False)
             else:
                 obj.Employee_Phone = Employee_Phone
         if Position != '':
@@ -559,12 +560,12 @@ def employeeupdate():
             obj.Salary = Salary
         
         db.session.commit()
-    except Exception as err:
-        db.session.rollback()
-        msg = 'One or more attributes of invalid data type was entered. Please try again.'
-        return updateemployee(feedback_message=err, feedback_type=False)
 
-    return updateemployee(feedback_message='Successfully updated employee with ID {}'.format(e_ID),
+    except Exception as ERROR:
+        db.session.rollback()
+        return updateemployee(feedback_message='One or more attributes of invalid data type was entered. Please try again.', feedback_type=False)
+
+    return updateemployee(feedback_message='Successfully updated employee with email {}'.format(e_email),
                        feedback_type=True)
 
 @app.route("/updatemanf") #####may needto fix this part
@@ -607,12 +608,12 @@ def manfupdate():
             obj.Manufacturer_Headquarters = hq
         if email != '':
             if isValidEmail(email) == False:
-                return updatemanf(feedback_message='The email you entered was invalid. Please try again.', feedback_type=False)
+                return updatemanf(feedback_message='The email you entered was not in the correct format. Please try again.', feedback_type=False)
             else:
                 obj.Manufacturer_Email = email
         if phone != '':
             if isValidEmail(phone) == False:
-                return updatemanf(feedback_message='The phone number you entered was invalid. Please try again.', feedback_type=False)
+                return updatemanf(feedback_message='The phone number you entered was not in the correct format. Please try again.', feedback_type=False)
             else:
                 obj.Manufacturer_Phone = phone
         if desc != '':
@@ -620,10 +621,9 @@ def manfupdate():
             
         db.session.commit()
         
-    except Exception as err:
+    except Exception as ERROR:
         db.session.rollback()
-        msg = 'One or more attributes of invalid data type was entered. Please try again.'
-        return updatemanf(feedback_message=err, feedback_type=False)
+        return updatemanf(feedback_message='One or more attributes of invalid data type was entered. Please try again.', feedback_type=False)
 
     return updatemanf(feedback_message='Successfully updated manufacturer {}'.format(manf_name),
                        feedback_type=True)
