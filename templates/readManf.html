@@ -13,6 +13,7 @@
         <th>Email</th>
         <th>Phone</th>
         <th>Description</th>
+        <th></th>
 
     </tr>
     {% for ID, Name, Headquarters, Email, Phone, Description in manflist %}
@@ -23,6 +24,9 @@
         <td>{{ Email }}</td>
         <td>{{ Phone }}</td>
         <td>{{ Description }}</td>
+        <td> <a href="/updatemanfid/{{ID}}"><button> Update Manf </button></a> </td>
+        <td> <a href="/deletemanfid/{{ID}}"><button> Delete Manf </button></a> </td>
+
     </tr>
     {% endfor %}    
 </table>

@@ -24,6 +24,8 @@
         <td>{{ Product_Size }}</td>
         <td>{{ Product_Type }}</td>
         <td>{{ Product_Description }}</td>
+        <td><a href="/updateproductid/{{Product_ID}}"><button> Update Product </button></a></td>
+        <td><a href="/deleteproductid/{{Product_ID}}"><button> Delete Product </button></a></td>
     </tr>
     {% endfor %}    
 </table>
