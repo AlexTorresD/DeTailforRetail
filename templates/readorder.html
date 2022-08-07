@@ -24,6 +24,8 @@
       <td>{{ Order_Price }}</td>
       <td>{{ Order_Date }}</td>
       <td>{{ Received }}</td>
+      <td><a href="/updateorderid/{{Order_ID}}"><button> Update Order </button></a></td>
+      <td><a href="/deleteorderid/{{Order_ID}}"><button> Delete Order </button></a></td>
   </tr>
   {% endfor %}    
 </table>

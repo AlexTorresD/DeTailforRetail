@@ -7,12 +7,7 @@
 {% block body_form %}
 <div class="container" >
 <form action="" id="formSubmission" method="POST">
-  <label for="staffnames">Select staff</label>
-  <select name="staffnames">
-    {% for name in staffnames %}
-      <option value="{{ name }}">{{ name }}</option>
-    {% endfor %} 
-  </select>
+  <label>Select staff</label>
   <div>
     <input type="hidden" id="confirmInput" name="confirmInput"> 
     <button type="submit" name="delete_button" value="delete_button" onClick="confirmDelete('staff')"> Delete </button>

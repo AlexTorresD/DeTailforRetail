@@ -1,0 +1,26 @@
+{% extends "layouts/formlayout.html" %}
+
+{% block title_form %}
+<h2>Update Store</h2>
+{% endblock %}
+
+{% block body_form %}
+<div class="container" >
+  <form action="" id="formSubmission" method="POST">
+  <label>Update Store</label>
+  </select>
+    <h5>Enter the updated order details</h5>
+    <div>
+      <input type="text" name="Store_ID" placeholder="name" value="{{store.Store_ID}}">
+    </div>
+    <div>
+        <input type="text" name="Store_Name" placeholder="Store_Name" value="{{store.Store_Name}}">
+    </div>
+    <div>
+        <input type="text" name="Location" placeholder="Location" value="{{store.Location}}">
+    </div>
+      <button >Update</button>
+    </div>
+</form>
+
+{% endblock %}

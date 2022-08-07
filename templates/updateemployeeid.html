@@ -1,0 +1,34 @@
+{% extends "layouts/tablelayout.html" %}
+
+{% block body_table %}
+
+<div class="container" >
+<form action="" id="formSubmission" method="POST">    
+      <div>
+        <input type="text" name="Employee_ID" placeholder="ID" value = "{{employee.Employee_ID}}">
+      </div>
+      <div>
+          <input type="text" name="Employee_Fname" placeholder="First Name" value = "{{employee.Employee_Fname}}">
+      </div>
+      <div>
+        <input type="text" name="Employee_Lname" placeholder="Last Name" value = "{{employee.Employee_Lname}}">
+      </div>
+      <div>
+        <input type="text" name="Employee_Email" placeholder="Email" value = "{{employee.Employee_Email}}">
+      </div>
+      <div>
+        <input type="text" name="Employee_Phone" placeholder="Phone" value = "{{employee.Employee_Phone}}">
+      </div>
+      <div>
+        <input type="text" name="Position" placeholder="Position" value = "{{employee.Position}}">
+      </div>
+      <div>
+        <input type="text" name="Hours_Worked" placeholder="Hours Worked" value = "{{employee.Hours_Worked}}">
+      </div>
+      <div>
+        <input type="text" name="Salary" placeholder="Salary" value = "{{employee.Salary}}">
+      </div>
+      <button type="submit">Update</button>
+  </form>
+
+{% endblock %}
