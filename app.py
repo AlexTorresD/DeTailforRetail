@@ -2,18 +2,69 @@ from itertools import product
 from modulefinder import STORE_NAME
 from multiprocessing import synchronize
 from turtle import position
+from flask import Flask, render_template, request, flash, redirect, url_for
 from flask import Flask, redirect, render_template, request, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import select
 from sqlalchemy import exc
 import psycopg2
+from functools import wraps
+
+from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import InputRequired, Length, ValidationError
+from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://<user>:<password>@localhost/<appname>'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Xotillweod27*@localhost/csce310-app'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:123456Yyt@localhost/csce310-app'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = 'secret string'
 db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), nullable=False, unique=True)
+    password = db.Column(db.String(80), nullable=False)
+    type = db.Column(db.Integer, nullable=True)
+
+class RegisterForm(FlaskForm):
+    username = StringField(validators=[
+                           InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
+
+    password = PasswordField(validators=[
+                             InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
+
+    submit = SubmitField('Register')
+
+    def validate_username(self, username):
+        existing_user_username = User.query.filter_by(
+            username=username.data).first()
+        if existing_user_username:
+            raise ValidationError(
+                'That username already exists. Please choose a different one.')
+
+class LoginForm(FlaskForm):
+    username = StringField(validators=[InputRequired(), Length(
+        min = 4, max=20)], render_kw={"placeholder": "Username"})
+    
+    password = PasswordField(validators=[InputRequired(), Length(
+        min = 4, max=20)], render_kw={"placeholder": "Password"})
+    
+    submit = SubmitField("Login")
+
+
 class Store(db.Model):  
     Store_ID = db.Column(db.Integer, primary_key=True)
     Store_Name = db.Column(db.String(128))
@@ -1204,3 +1255,60 @@ def manfdeleteid(id):
 @app.route('/')
 def home():
     return render_template('home.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        username_ = form.username.data
+        print(username_)
+        user = User.query.filter_by(username=form.username.data).first()
+        if user:
+            if user.password == form.password.data:
+                login_user(user)
+                
+                if('admin' in username_):
+                    return redirect(url_for('dashboard'))
+                elif('store' in username_):
+                    return redirect(url_for('dashboard2'))
+                elif('manufacturer' in username_):
+                    return redirect(url_for('dashboard3'))
+                
+    return render_template('login.html', form = form)
+
+@app.route('/logout', methods=['GET', 'POST'])
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+@app.route('/dashboard', methods=['GET', 'POST'])
+@login_required 
+def dashboard():
+    return render_template('dashboard.html')
+
+#maby another dashboard route here
+@app.route('/dashboard2', methods=['GET', 'POST'])
+@login_required 
+def dashboard2():
+    return render_template('dashboard2.html')
+
+@app.route('/dashboard3', methods=['GET', 'POST'])
+@login_required 
+def dashboard3():
+    return render_template('dashboard3.html')
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegisterForm()
+
+    if form.validate_on_submit():
+        ###hashed_password = bcrypt.generate_password_hash(form.password.data)
+        new_user = User(username=form.username.data, password=form.password.data, )
+        db.session.add(new_user)
+        db.session.commit()
+        return redirect(url_for('login'))
+    
+    return render_template('register.html', form = form)
+
