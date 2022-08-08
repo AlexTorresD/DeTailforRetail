@@ -1,0 +1,24 @@
+{% extends "layouts/formlayout.html" %}
+
+{% block title_form %}
+<div class="button" style="background-color: #8721e6;"></div>
+<h2>Delete Manufacturer</h2>
+{% endblock %}
+
+{% block body_form %}
+<form action="{{ url_for('manfdelete')}}" method="post"> <!-- Insert URL-->
+
+  <label for="manfnames">Select a manufacturer</label>
+  <select name="manfnames">
+    {% for name in manfnames %}
+      <option value="{{ name }}">{{ name }}</option>
+    {% endfor %} 
+  </select>
+  
+  <div>
+    <input type="hidden" id="confirmInput" name="confirmInput"> 
+    <button type="submit" name="delete_button" value="delete_button" onClick="confirmDelete('chef')"> Delete </button>
+  </div>
+</form>
+
+{% endblock %}

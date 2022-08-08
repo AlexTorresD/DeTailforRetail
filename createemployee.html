@@ -1,0 +1,39 @@
+{% extends "layouts/formlayout.html" %}
+
+{% block title_form %}
+<h2>Create Employee</h2>
+{% endblock %}
+
+{% block body_form %}
+<form action="{{ url_for('employeecreate')}}" method="post">
+    <h5>Enter the employee details</h5>
+    <div>
+        <input type="text" name="Employee_ID" placeholder="ID">
+    </div>
+    <div>
+        <input type="text" name="Employee_Fname" placeholder="First Name">
+    </div>
+    <div>
+        <input type="text" name="Employee_Lname" placeholder="Last Name">
+    </div>
+    <div>
+      <input type="text" name="Employee_Email" placeholder="Email">
+  </div>
+  <div>
+    <input type="text" name="Employee_Phone" placeholder="Phone">
+</div>
+<div>
+    <input type="text" name="Position" placeholder="Position">
+</div>
+<div>
+    <input type="text" name="Hours_Worked" placeholder="Hours Worked">
+</div>
+<div>
+    <input type="text" name="Salary" placeholder="Salary">
+</div>
+    <div>
+        <button >Create</button>
+    </div>
+</form>
+
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "layouts/formlayout.html" %}
+
+{% block title_form %}
+<div class="button" style="background-color: #8721e6;"></div>
+<h2>Update Store</h2>
+{% endblock %}
+
+{% block body_form %}
+<form action="{{ url_for('storeupdate')}}" method="post">
+  <label for="storenames">Select a order to update</label>
+  <select name="storenames">
+    {% for name in storenames %}
+      <option value="{{ name }}">{{ name }}</option>
+    {% endfor %} 
+  </select>
+    <h5>Enter the updated order details</h5>
+    <div>
+      <input type="text" name="Store_ID" placeholder="name">
+    </div>
+    <div>
+        <input type="text" name="Store_Name" placeholder="Store_Name">
+    </div>
+    <div>
+        <input type="text" name="Location" placeholder="Location">
+    </div>
+      <button >Update</button>
+    </div>
+</form>
+
+{% endblock %}

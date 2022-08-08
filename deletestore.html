@@ -1,0 +1,21 @@
+{% extends "layouts/formlayout.html" %}
+
+{% block title_form %}
+<div class="button" style="background-color: #8721e6;"></div>
+<h2>Delete Store</h2>
+{% endblock %}
+
+{% block body_form %}
+<form action="{{ url_for('storedelete')}}" method="post">
+  <label for="storenames">Select Store</label>
+  <select name="storenames">
+    {% for name in storenames %}
+      <option value="{{ name }}">{{ name }}</option>
+    {% endfor %} 
+  </select>
+  <div>
+    <input type="hidden" id="confirmInput" name="confirmInput"> 
+    <button type="submit" name="delete_button" value="delete_button" onClick="confirmDelete('store')"> Delete </button>
+  </div>
+</form>
+{% endblock %}

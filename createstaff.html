@@ -1,0 +1,23 @@
+{% extends "layouts/formlayout.html" %}
+{% block title_form %}
+<div class="button" style="background-color: #8721e6;"></div>
+<h2>Create Staff</h2>
+{% endblock %}
+{% block body_form %}
+<form action="{{ url_for('staffcreate')}}" method="post">
+<h5>Enter the Staff details</h5>
+<div>
+    <input type="text" name="Staff_ID" placeholder="Staff_ID">
+</div>
+<div>
+    <input type="text" name="Store_ID" placeholder="Store_ID">
+</div>
+<div>
+    <input type="text" name="Employee_ID" placeholder="Employee_ID">
+</div>
+<div>
+    <button >Create</button>
+</div>
+</form>
+
+{% endblock %}

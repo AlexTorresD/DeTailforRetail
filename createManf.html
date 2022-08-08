@@ -1,0 +1,35 @@
+{% extends "layouts/formlayout.html" %}
+
+{% block title_form%}
+<h2>Create Manufacturer </h2>
+{% endblock %}
+
+{% block body_form%}
+
+<form action="{{ url_for('manfcreate')}}" method="post">
+    <h5> Enter the Manufacturer details </h5>
+    <div>
+        <input type="text" name="manf_id" placeholder="id">
+    </div>
+    <div>
+        <input type="text" name="manf_name" placeholder="name">
+    </div>
+    <div>
+        <input type="text" name="manf_email" placeholder="email">
+    </div>
+    <div>
+        <input type="text" name="manf_phone" placeholder="phone">
+    </div>
+    <div>
+        <input type="text" name="manf_headquarters" placeholder="headquarters">
+    </div>
+    <div>
+        <input type="text" name="manf_description" placeholder="description">
+    </div>
+
+    <div>
+        <button >Create</button>
+    </div>
+</form>
+
+{% endblock %}
