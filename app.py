@@ -132,7 +132,7 @@ def getManf():
     for manf in result.scalars():
         manf_list.append((manf.Manufacturer_Name, manf.Manufacturer_Email,
                           manf.Manufacturer_Phone, manf.Manufacturer_Headquarters, manf.Manufacturer_Description))
-    return manf_list;
+    return manf_list
 
 def getemployees():
     query = select(Employee)
