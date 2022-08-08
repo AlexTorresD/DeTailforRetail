@@ -256,7 +256,7 @@ def storecreate(): #DONE BY ELVIS
         db.session.add(entry); db.session.commit()
     except exc.IntegrityError as ERROR:
         db.session.rollback()
-        return createstore(feedback_message='ID' + Store_ID + "already exists. Please try again.", feedback_type=False)
+        return createstore(feedback_message='A store with ID ' + Store_ID + "already exists. Please try again.", feedback_type=False)
     except Exception as ERROR:
         db.session.rollback()
         return createstore(feedback_message='An error occurred. Please try again.', feedback_type=False)
@@ -277,7 +277,7 @@ def staffcreate(): #DONE BY ELVIS
         db.session.add(entry); db.session.commit()
     except exc.IntegrityError as ERROR:
         db.session.rollback()
-        return createstaff(feedback_message='ID' + Staff_ID + "already exists. Please try again.", feedback_type=False)
+        return createstaff(feedback_message='Staff ID must be unique, store ID must exist, and employee ID must exist. One or more of the three conditions was violated. Please try again.', feedback_type=False)
     except Exception as ERROR:
         db.session.rollback()
         return createstaff(feedback_message='An error occurred. Please try again.', feedback_type=False)
@@ -308,10 +308,10 @@ def productcreate():
         db.session.commit()
     except exc.IntegrityError as err:
         db.session.rollback()
-        return createproduct(feedback_message='A product with ID {} already exists. Create a product with a different ID.'.format(Product_ID), feedback_type=False)
+        return createproduct(feedback_message='Product ID must be unique and manufacturer ID must exist. One or more of the two conditions were violated. Please try again.'.format(Product_ID), feedback_type=False)
     except Exception as err:
         db.session.rollback()
-        return createproduct(feedback_message='Database error: {}'.format(err), feedback_type=False)
+        return createproduct(feedback_message='One or more attributes entered contained an invalid data type. Please try again.', feedback_type=False)
             
 
     return createproduct(feedback_message='Successfully added product {}'.format(Product_ID),
@@ -341,7 +341,7 @@ def ordercreate():
         db.session.commit()
     except exc.IntegrityError as err:
         db.session.rollback()
-        return createorder(feedback_message='A order with ID {} already exists. Create a order with a different name.'.format(Order_ID), feedback_type=False)
+        return createorder(feedback_message='Order ID must be unique, store ID must exist, and product ID must exist. One or more of the three conditions were violated. Please try again.'.format(Order_ID), feedback_type=False)
     except Exception as err:
         db.session.rollback()
         return createorder(feedback_message='Database error: {}'.format(err), feedback_type=False)
