@@ -18,7 +18,7 @@ from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://<user>:<password>@localhost/<appname>'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:123456Yyt@localhost/csce310-app'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:password@localhost/DeTail'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = 'secret string'
 db = SQLAlchemy(app)
@@ -132,7 +132,7 @@ def getManf():
     for manf in result.scalars():
         manf_list.append((manf.Manufacturer_Name, manf.Manufacturer_Email,
                           manf.Manufacturer_Phone, manf.Manufacturer_Headquarters, manf.Manufacturer_Description))
-    return manf_list;
+    return manf_list
 
 def getemployees():
     query = select(Employee)
@@ -207,15 +207,6 @@ def isValidEmail(email):
         return False
     else:
         return True   
-
-
-def getemployee_byID(id):
-    query = select(Employee).where(Employee.Employee_ID == id)
-    result = db.session.execute(query)
-    employee = result.scalars()
-    if employee is None:
-        raise('Employee no found')
-    return employee
 
 #CREATE
 
@@ -1250,13 +1241,8 @@ def manfdeleteid(id):
         return redirect('/readorder')
     except Exception as ERROR:
         db.session.rollback()
-        return render_template("deletemanfid.html", feedback_message='An error occurred. Please try again.', feedback_type=False)
 
-@app.route('/')
-def home():
-    return render_template('home.html')
-
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -1266,7 +1252,6 @@ def login():
         if user:
             if user.password == form.password.data:
                 login_user(user)
-                
                 if('admin' in username_):
                     return redirect(url_for('dashboard'))
                 elif('store' in username_):
@@ -1275,6 +1260,10 @@ def login():
                     return redirect(url_for('dashboard3'))
                 
     return render_template('login.html', form = form)
+
+@app.route('/home')
+def home():
+    return render_template('home.html')
 
 @app.route('/logout', methods=['GET', 'POST'])
 @login_required
@@ -1285,18 +1274,18 @@ def logout():
 @app.route('/dashboard', methods=['GET', 'POST'])
 @login_required 
 def dashboard():
-    return render_template('dashboard.html')
+    return render_template('admin.html')
 
 #maby another dashboard route here
 @app.route('/dashboard2', methods=['GET', 'POST'])
 @login_required 
 def dashboard2():
-    return render_template('dashboard2.html')
+    return render_template('store.html')
 
 @app.route('/dashboard3', methods=['GET', 'POST'])
 @login_required 
 def dashboard3():
-    return render_template('dashboard3.html')
+    return render_template('manf.html')
 
 
 @app.route('/register', methods=['GET', 'POST'])

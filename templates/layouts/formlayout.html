@@ -5,7 +5,21 @@
 {% block title_form %} {% endblock %}
 {% block body_form %} {% endblock %}
 
-<a href="/"><button> Go back </button></a>
+{% block content %}
+
+{% if('admin' in current_user.username) %}
+<a href="/dashboard"><button> Go back </button></a>
+{% endif %}
+
+{% if('store' in current_user.username) %}
+<a href="/dashboard2"><button> Go back </button></a>
+{% endif %}
+
+{% if('manufacturer' in current_user.username) %}
+<a href="/dashboard3"><button> Go back </button></a>
+{% endif %}
+
+{% endblock content %}
 
 {% if feedback_message != None %}
     {% if feedback_type %}

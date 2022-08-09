@@ -4,8 +4,19 @@
 
 {% block title_table %} {% endblock %}
 {% block body_table %} {% endblock %}
+{% block content %}
+{% if('admin' in current_user.username) %}
+<a href="/dashboard"><button> Go back </button></a>
+{% endif %}
 
-<a href="/"><button> Go back </button></a>
+{% if('store' in current_user.username) %}
+<a href="/dashboard2"><button> Go back </button></a>
+{% endif %}
+
+{% if('manufacturer' in current_user.username) %}
+<a href="/dashboard3"><button> Go back </button></a>
+{% endif %}
+{% endblock content %}
 
 {% endblock %}
 
