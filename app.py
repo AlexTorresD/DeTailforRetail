@@ -702,7 +702,6 @@ def employeeupdate():
 
 @app.route("/updateemployeeid/<int:id>",methods=['GET','POST'])
 def updateemployeeid(id):
-
     try:
         obj = Employee.query.filter_by(Employee_ID=id).first()
 
@@ -727,9 +726,15 @@ def updateemployeeid(id):
         if Employee_Lname != '':
             obj.Employee_Lname = Employee_Lname
         if Employee_Email != '':
-            obj.Employee_Email = Employee_Email
+            if isValidEmail(Employee_Email) == False:
+                return render_template('updateemployeeid.html', employee = obj, feedback_message='Email not in the correct format.')
+            else:
+                obj.Employee_Email = Employee_Email
         if Employee_Phone != '':
-            obj.Employee_Phone = Employee_Phone
+            if isValidPhoneNumber(Employee_Phone) == False:
+                return render_template('updateemployeeid.html', employee = obj, feedback_message='Phone number not in the correct format.')
+            else:
+                obj.Employee_Phone = Employee_Phone
         if Position != '':
             obj.Position = Position
         if Hours_Worked != '':
@@ -796,7 +801,7 @@ def manfupdate():
             else:
                 obj.Manufacturer_Email = email
         if phone != '':
-            if isValidEmail(phone) == False:
+            if isValidPhoneNumber(phone) == False:
                 return updatemanf(feedback_message='The phone number you entered was not in the correct format. Please try again.', feedback_type=False)
             else:
                 obj.Manufacturer_Phone = phone
@@ -835,9 +840,15 @@ def updatemanfid(id):
         if hq != '':
             obj.Manufacturer_Headquarters = hq
         if email != '':
-            obj.Manufacturer_Email = email
+            if isValidEmail(email) == False:
+                return updatemanf(feedback_message='The email you entered was not in the correct format. Please try again.', feedback_type=False)
+            else:
+                obj.Manufacturer_Email = email
         if phone != '':
-            obj.Manufacturer_Phone = phone
+            if isValidPhoneNumber(phone) == False:
+                return updatemanf(feedback_message='The phone number you entered was not in the correct format. Please try again.', feedback_type=False)
+            else:
+                obj.Manufacturer_Phone = phone
         if desc != '':
             obj.Manufacturer_Description = desc
             
@@ -1233,14 +1244,16 @@ def manfdeleteid(id):
         return render_template("deletemanfid.html", feedback_message='Please confirm deletion.', feedback_type=False)
     try:
         obj = db.session.query(Manufacturer).filter(
-            Manufacturer.Manufacturer_Name == id).filter().first()
+            Manufacturer.Manufacturer_ID == id).filter().first()
         if obj == None:
             return render_template("deletemanfid.html", feedback_message='Store does not exist. Please try again.', feedback_type=False)
         db.session.delete(obj)
         db.session.commit()
-        return redirect('/readorder')
-    except Exception as ERROR:
+        return redirect('/readmanf')
+    except Exception as err:
         db.session.rollback()
+        return render_template("deletemanfid.html", feedback_message='An error occurred. Please try again.', feedback_type=False)
+
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
