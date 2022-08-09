@@ -6,7 +6,7 @@
 
 {% block body_form %}
 <div class="container" >
-<form action="" id="formSubmission" method="POST">
+<form action="{{ url_for('staffdelete')}}" id="formSubmission" method="POST">
   <label for="staffnames">Select staff</label>
   <select name="staffnames">
     {% for name in staffnames %}
