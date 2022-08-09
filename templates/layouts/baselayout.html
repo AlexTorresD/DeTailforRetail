@@ -23,15 +23,15 @@
         <div class="container-fluid">
           {% block content %}
           {% if('admin' in current_user.username) %}
-          <a href="/dashboard">DeTail For Retail</a>
+          <a class="navbar-brand" href="/dashboard">DeTail For Retail</a>
           {% endif %}
 
           {% if('store' in current_user.username) %}
-          <a href="/dashboard2">DeTail For Retail</a>
+          <a class="navbar-brand" href="/dashboard2">DeTail For Retail</a>
           {% endif %}
 
           {% if('manufacturer' in current_user.username) %}
-          <a href="/dashboard3">DeTail For Retail</a>
+          <a class="navbar-brand" href="/dashboard3">DeTail For Retail</a>
           {% endif %}
 
           {% endblock content %}

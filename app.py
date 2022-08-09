@@ -1264,3 +1264,40 @@ def login():
 @app.route('/home')
 def home():
     return render_template('home.html')
+
+@app.route('/logout', methods=['GET', 'POST'])
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+@app.route('/dashboard', methods=['GET', 'POST'])
+@login_required 
+def dashboard():
+    return render_template('admin.html')
+
+#maby another dashboard route here
+@app.route('/dashboard2', methods=['GET', 'POST'])
+@login_required 
+def dashboard2():
+    return render_template('store.html')
+
+@app.route('/dashboard3', methods=['GET', 'POST'])
+@login_required 
+def dashboard3():
+    return render_template('manf.html')
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegisterForm()
+
+    if form.validate_on_submit():
+        ###hashed_password = bcrypt.generate_password_hash(form.password.data)
+        new_user = User(username=form.username.data, password=form.password.data, )
+        db.session.add(new_user)
+        db.session.commit()
+        return redirect(url_for('login'))
+    
+    return render_template('register.html', form = form)
+
